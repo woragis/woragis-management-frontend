@@ -1,0 +1,199 @@
+<script lang="ts">
+	import { onMount } from 'svelte';
+	import { projectsClient } from '$lib/api/projects';
+	import { user, isAuthenticated } from '$lib/stores/auth';
+	import { goto } from '$app/navigation';
+	import type { Project } from '$lib/api/types';
+
+	let loading = true;
+	let error: string | null = null;
+	let projects: Project[] = [];
+	let newProject = {
+		name: '',
+		description: '',
+		status: 'planning' as const
+	};
+	let showForm = false;
+	let creating = false;
+
+	onMount(async () => {
+		if (!$isAuthenticated) {
+			await goto('/auth/login');
+			return;
+		}
+
+		await loadProjects();
+	});
+
+	async function loadProjects() {
+		loading = true;
+		error = null;
+
+		try {
+			const response = await projectsClient.listProjects();
+			projects = response.data || [];
+		} catch (err: any) {
+			error = err.message || 'Failed to load projects';
+			console.error('Error loading projects:', err);
+		} finally {
+			loading = false;
+		}
+	}
+
+	async function handleCreateProject(e: SubmitEvent) {
+		e.preventDefault();
+		error = null;
+		creating = true;
+
+		try {
+			await projectsClient.createProject(newProject);
+			newProject = { name: '', description: '', status: 'planning' as const };
+			showForm = false;
+			await loadProjects();
+		} catch (err: any) {
+			error = err.message || 'Failed to create project';
+			console.error('Error creating project:', err);
+		} finally {
+			creating = false;
+		}
+	}
+
+	async function handleDeleteProject(id: string) {
+		if (!confirm('Are you sure you want to delete this project?')) return;
+
+		error = null;
+		try {
+			await projectsClient.deleteProject(id);
+			await loadProjects();
+		} catch (err: any) {
+			error = err.message || 'Failed to delete project';
+			console.error('Error deleting project:', err);
+		}
+	}
+
+	function navigateToDetail(projectId: string) {
+		goto(`/projects/${projectId}`);
+	}
+</script>
+
+<div class="container mx-auto px-4 py-8">
+	<div class="mb-6 flex items-center justify-between">
+		<h1 class="text-3xl font-bold text-gray-900">Projects</h1>
+		<button
+			onclick={() => (showForm = !showForm)}
+			class="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 transition-colors"
+		>
+			{showForm ? 'Cancel' : '+ New Project'}
+		</button>
+	</div>
+
+	{#if error}
+		<div class="mb-4 rounded-lg bg-red-50 p-4 text-red-800">{error}</div>
+	{/if}
+
+	{#if showForm}
+		<div class="mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+			<h2 class="mb-4 text-xl font-semibold text-gray-900">Create New Project</h2>
+			<form class="space-y-4" onsubmit={handleCreateProject}>
+				<div>
+					<label for="name" class="block text-sm font-medium text-gray-700 mb-1">
+						Project Name
+					</label>
+					<input
+						id="name"
+						type="text"
+						placeholder="Enter project name"
+						bind:value={newProject.name}
+						required
+						disabled={creating}
+						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+					/>
+				</div>
+
+				<div>
+					<label for="description" class="block text-sm font-medium text-gray-700 mb-1">
+						Description
+					</label>
+					<textarea
+						id="description"
+						placeholder="Project description"
+						bind:value={newProject.description}
+						disabled={creating}
+						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+					></textarea>
+				</div>
+
+				<div>
+					<label for="status" class="block text-sm font-medium text-gray-700 mb-1">
+						Status
+					</label>
+					<select
+						id="status"
+						bind:value={newProject.status}
+						disabled={creating}
+						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+					>
+						<option value="planning">Planning</option>
+						<option value="in_progress">In Progress</option>
+						<option value="on_hold">On Hold</option>
+						<option value="completed">Completed</option>
+						<option value="archived">Archived</option>
+					</select>
+				</div>
+
+				<button
+					type="submit"
+					disabled={creating}
+					class="w-full rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+				>
+					{#if creating}
+						Creating...
+					{:else}
+						Create Project
+					{/if}
+				</button>
+			</form>
+		</div>
+	{/if}
+
+	{#if loading}
+		<div class="text-center py-12">
+			<div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+			<p class="mt-4 text-gray-600">Loading projects...</p>
+		</div>
+	{:else if projects.length === 0}
+		<div class="rounded-lg border border-gray-200 bg-white p-12 text-center shadow-sm">
+			<p class="text-gray-600">No projects yet. Create your first project to get started!</p>
+		</div>
+	{:else}
+		<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+			{#each projects as project (project.id)}
+				<div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
+					<div class="mb-3 flex items-start justify-between">
+						<h3 class="text-lg font-semibold text-gray-900">{project.name}</h3>
+						<span class="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
+							{project.status || 'PLANNING'}
+						</span>
+					</div>
+					{#if project.description}
+						<p class="mb-4 text-sm text-gray-600 line-clamp-2">{project.description}</p>
+					{/if}
+					<div class="flex gap-2">
+						<button
+							onclick={() => navigateToDetail(project.id)}
+							class="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+						>
+							View
+						</button>
+						<button
+							onclick={() => handleDeleteProject(project.id)}
+							class="rounded-md border border-red-300 px-3 py-2 text-sm text-red-700 hover:bg-red-50 transition-colors"
+						>
+							Delete
+						</button>
+					</div>
+				</div>
+			{/each}
+		</div>
+	{/if}
+</div>
