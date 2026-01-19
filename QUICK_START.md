@@ -158,7 +158,7 @@ Create `src/routes/projects/+page.svelte`:
 			error = '';
 			await projectsClient.createProject({
 				name: newProjectName,
-				status: 'planning',
+				status: 'planning'
 			});
 			newProjectName = '';
 			await loadProjects();
@@ -279,13 +279,13 @@ Create `src/routes/projects/+page.svelte`:
 
 ```typescript
 // Auth
-import { 
+import {
   login, logout, user, isAuthenticated,
   initializeAuth, register, refreshUser
 } from '$lib';
 
 // Clients (pick what you need)
-import { 
+import {
   projectsClient, ideasClient, chatsClient,
   clientsClient, financesClient, experiencesClient,
   userProfilesClient, apiKeysClient, languagesClient,
@@ -302,11 +302,13 @@ import { authClient, tokenCookies } from '$lib';
 ## Common Operations
 
 ### Login
+
 ```typescript
 await login('user@example.com', 'password');
 ```
 
 ### Create Project
+
 ```typescript
 const project = await projectsClient.createProject({
   name: 'My Project',
@@ -316,21 +318,25 @@ const project = await projectsClient.createProject({
 ```
 
 ### List Projects
+
 ```typescript
 const { data: projects, meta } = await projectsClient.listProjects(1, 10);
 ```
 
 ### Update Project Status
+
 ```typescript
 await projectsClient.updateStatus(projectId, 'in_progress');
 ```
 
 ### Delete Project
+
 ```typescript
 await projectsClient.deleteProject(projectId);
 ```
 
 ### Check Authentication
+
 ```typescript
 import { isAuthenticated, user } from '$lib';
 
@@ -367,20 +373,24 @@ PUBLIC_AUTH_API_URL=http://localhost:3010
 ## Troubleshooting
 
 ### "Cannot find module" errors
+
 - Run `npm install`
 - Clear node_modules: `rm -rf node_modules && npm install`
 
 ### CORS errors
+
 - Ensure backend is running
 - Check API URLs match backend
 - Backend should have CORS enabled
 
 ### 401 Unauthorized
+
 - Check if token is in cookies (browser DevTools → Application → Cookies)
 - Try logging in again
 - Clear cookies and retry
 
 ### Port conflicts
+
 - Change frontend port: `npm run dev -- --port 5174`
 - Change backend port in docker-compose.yml
 
@@ -405,6 +415,7 @@ PUBLIC_AUTH_API_URL=http://localhost:3010
 ## Support
 
 All API clients follow the same pattern:
+
 ```typescript
 // Import
 import { domainClient } from '$lib';
@@ -414,6 +425,7 @@ const result = await domainClient.method(params);
 ```
 
 Every client has automatic:
+
 - Token management
 - Error handling
 - Pagination support (where applicable)

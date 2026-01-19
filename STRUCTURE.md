@@ -119,26 +119,32 @@ frontend/
 ## File Descriptions
 
 ### Core Configuration
+
 - **config.ts** - Manages API URLs from environment variables
 - **index.ts** - Central export point for all modules
 
 ### API Infrastructure
+
 - **api/utils.ts** - Axios client factory, error handling, type definitions
 - **api/types.ts** - TypeScript types for all 12 domains
 - **api/base-client.ts** - Abstract base class with common CRUD operations
 
 ### Authentication Module (api/auth/)
+
 - **client.ts** - Auth API client with login, register, logout, token refresh
 - **cookies.ts** - Secure token storage using browser cookies
 - **types.ts** - Auth-specific TypeScript interfaces
 - **index.ts** - Public exports for auth module
 
 ### Domain Clients (api/{domain}/)
+
 Each of 12 domains has the same pattern:
+
 - **client.ts** - Domain-specific API client class
 - **index.ts** - Module exports
 
 **Domains:**
+
 1. projects - Full project management with sub-resources
 2. ideas - Idea tracking
 3. chats - Chat conversations
@@ -153,12 +159,14 @@ Each of 12 domains has the same pattern:
 12. testimonials - Testimonials
 
 ### State Management
+
 - **stores/auth.ts** - Svelte stores for authentication state
   - user, isLoading, error
   - Derived: isAuthenticated, hasTokens
   - Functions: initializeAuth, login, register, logout, refreshUser, changePassword, clearAuth
 
 ### Components
+
 - **components/ProjectsExample.svelte** - Full example component showing:
   - Create projects
   - List projects with pagination
@@ -168,6 +176,7 @@ Each of 12 domains has the same pattern:
   - Loading states
 
 ### Documentation
+
 - **INTEGRATION.md** - Comprehensive integration guide with usage examples
 - **INTEGRATION_SUMMARY.md** - Quick summary of what was created
 - **ENVIRONMENT_SETUP.md** - Environment variables and backend setup
@@ -177,11 +186,12 @@ Each of 12 domains has the same pattern:
 ## Import Patterns
 
 ### Import from main library
+
 ```typescript
-import { 
-  projectsClient, 
+import {
+  projectsClient,
   ideasClient,
-  user, 
+  user,
   isAuthenticated,
   login,
   logout
@@ -189,6 +199,7 @@ import {
 ```
 
 ### Import from specific modules
+
 ```typescript
 import { projectsClient } from '$lib/api/projects';
 import { authClient, tokenCookies } from '$lib/api/auth';
@@ -196,6 +207,7 @@ import { user, login } from '$lib/stores/auth';
 ```
 
 ### Import types
+
 ```typescript
 import type { Project, Idea, Chat } from '$lib';
 import type { User, AuthResponse } from '$lib/api/auth';
@@ -203,20 +215,21 @@ import type { User, AuthResponse } from '$lib/api/auth';
 
 ## File Statistics
 
-| Category | Count | Files |
-|----------|-------|-------|
-| API Clients | 24 | 12 domains × 2 files |
-| API Infrastructure | 4 | config, utils, types, base-client |
-| Auth Module | 4 | client, cookies, types, index |
-| State Management | 1 | auth.ts |
-| Components | 1 | ProjectsExample.svelte |
-| Documentation | 5 | INTEGRATION, SUMMARY, ENVIRONMENT, API_REFERENCE, STRUCTURE |
-| Config Files | 10 | package.json, tsconfig, eslint, etc. |
-| **Total** | **49** | **API + Infrastructure files** |
+| Category           | Count  | Files                                                       |
+| ------------------ | ------ | ----------------------------------------------------------- |
+| API Clients        | 24     | 12 domains × 2 files                                        |
+| API Infrastructure | 4      | config, utils, types, base-client                           |
+| Auth Module        | 4      | client, cookies, types, index                               |
+| State Management   | 1      | auth.ts                                                     |
+| Components         | 1      | ProjectsExample.svelte                                      |
+| Documentation      | 5      | INTEGRATION, SUMMARY, ENVIRONMENT, API_REFERENCE, STRUCTURE |
+| Config Files       | 10     | package.json, tsconfig, eslint, etc.                        |
+| **Total**          | **49** | **API + Infrastructure files**                              |
 
 ## Key Design Patterns
 
 ### 1. Modular Organization
+
 ```
 api/
 ├── utils.ts (shared)
@@ -226,6 +239,7 @@ api/
 ```
 
 ### 2. Consistent Client Pattern
+
 ```typescript
 class XyzClient extends BaseApiClient {
   constructor() { super('/endpoint'); }
@@ -234,17 +248,20 @@ class XyzClient extends BaseApiClient {
 ```
 
 ### 3. Single Instance Pattern
+
 ```typescript
 export const projectsClient = new ProjectsApiClient();
 ```
 
 ### 4. Svelte Stores for State
+
 ```typescript
 const user = writable<User | null>(null);
 export const isAuthenticated = derived(user, ...);
 ```
 
 ### 5. Centralized Exports
+
 All modules export through `lib/index.ts` for clean imports.
 
 ## Token Flow
@@ -293,9 +310,11 @@ Return Data / Throw Error
 ## Dependency Management
 
 ### External Dependencies
+
 - **axios** - HTTP client (v1.13.2)
 
 ### Built-in SvelteKit
+
 - svelte/store - State management
 - $app/environment - Runtime environment check
 - $lib - Path alias for lib folder

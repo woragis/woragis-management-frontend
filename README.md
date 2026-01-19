@@ -39,6 +39,7 @@ Visit `http://localhost:5173`
 ## 🏗️ Architecture
 
 ### API Clients (12 domains)
+
 - **Projects** - Full project management with milestones, kanban, documentation
 - **Ideas** - Idea tracking and management
 - **Chats** - Conversation management
@@ -53,6 +54,7 @@ Visit `http://localhost:5173`
 - **Testimonials** - Testimonials management
 
 ### Authentication
+
 - Secure cookie-based token storage
 - Automatic token refresh on 401
 - Login, register, logout functions
@@ -61,6 +63,7 @@ Visit `http://localhost:5173`
 ## 💻 Usage Examples
 
 ### Authentication
+
 ```typescript
 import { login, logout, isAuthenticated, user } from '$lib';
 
@@ -78,6 +81,7 @@ await logout();
 ```
 
 ### Projects
+
 ```typescript
 import { projectsClient } from '$lib';
 
@@ -105,6 +109,7 @@ const board = await projectsClient.getKanbanBoard(projectId);
 ```
 
 ### Any Other Domain
+
 ```typescript
 import { ideasClient, chatsClient, clientsClient } from '$lib';
 
@@ -139,12 +144,14 @@ src/lib/
 ## 🔧 Configuration
 
 ### Environment Variables
+
 ```env
 PUBLIC_MANAGEMENT_API_URL=http://localhost:3012
 PUBLIC_AUTH_API_URL=http://localhost:3010
 ```
 
 ### Backend Services (Reference)
+
 - Management: `http://localhost:3012`
 - Auth: `http://localhost:3010`
 
@@ -158,6 +165,7 @@ PUBLIC_AUTH_API_URL=http://localhost:3010
 ## ✅ What's Included
 
 ### Core Infrastructure
+
 ✅ Axios client factory with interceptors
 ✅ Base CRUD client class
 ✅ Comprehensive TypeScript types
@@ -165,18 +173,21 @@ PUBLIC_AUTH_API_URL=http://localhost:3010
 ✅ Token management system
 
 ### Authentication
+
 ✅ Auth client with login/register/logout
 ✅ Secure cookie-based token storage
 ✅ Automatic token refresh
 ✅ Svelte auth store with derived stores
 
 ### Domain Clients
+
 ✅ All 12 management service domains
 ✅ Automatic token inclusion in requests
 ✅ Pagination support
 ✅ Error handling and validation
 
 ### Documentation
+
 ✅ Integration guide (INTEGRATION.md)
 ✅ Quick start guide (QUICK_START.md)
 ✅ API reference (API_CLIENTS_REFERENCE.md)
@@ -184,6 +195,7 @@ PUBLIC_AUTH_API_URL=http://localhost:3010
 ✅ Structure documentation (STRUCTURE.md)
 
 ### Examples
+
 ✅ Example component (ProjectsExample.svelte)
 ✅ Usage patterns throughout docs
 ✅ Component implementation guide
@@ -191,30 +203,35 @@ PUBLIC_AUTH_API_URL=http://localhost:3010
 ## 🎯 Key Features
 
 ### Automatic Token Management
+
 - Tokens stored in secure, httpOnly cookies (server-side)
 - Automatically included in all requests
 - Automatic refresh on 401 responses
 - Seamless user experience
 
 ### Type Safety
+
 - Full TypeScript support
 - 12+ domain-specific types
 - Shared API response types
 - Better IDE autocomplete
 
 ### Consistent API Pattern
+
 - All clients extend BaseApiClient
 - Standard CRUD: create(), list(), getById(), update(), delete()
 - Domain-specific methods for complex operations
 - Predictable method signatures
 
 ### Error Handling
+
 - Consistent error format across all clients
 - Axios interceptors for global handling
 - getErrorMessage() helper for extraction
 - Try-catch ready
 
 ### Pagination
+
 - Built-in pagination parameters
 - Returns total count and page info
 - Easy navigation between pages
@@ -262,6 +279,7 @@ npm run check
 ## 🔗 Integration Pattern
 
 This frontend follows the same integration pattern as the jobs frontend:
+
 - Modular API clients organized by domain
 - Axios for HTTP requests
 - Svelte stores for state management
@@ -271,6 +289,7 @@ This frontend follows the same integration pattern as the jobs frontend:
 ## 📞 Support
 
 For issues or questions:
+
 1. Check the documentation files (INTEGRATION.md, API_CLIENTS_REFERENCE.md)
 2. Review the example component (ProjectsExample.svelte)
 3. Check the browser console for error messages
@@ -283,6 +302,7 @@ Part of the Woragis platform.
 ---
 
 **Created with TypeScript, SvelteKit, and Axios** ✨
+
 ```sh
 npm run build
 ```
