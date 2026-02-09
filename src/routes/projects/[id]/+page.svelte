@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { projectsClient } from '$lib/api/projects';
+	import { csrfTokenService } from '$lib/api/csrf';
 	import { isAuthenticated } from '$lib/stores/auth';
 	import { onMount } from 'svelte';
 	import type { Project } from '$lib/api/types';
@@ -19,6 +20,13 @@
 	onMount(async () => {
 		if (!$isAuthenticated) {
 			await goto('/auth/login');
+		}
+
+		// Fetch CSRF token on mount for any state-changing operations
+		try {
+			await csrfTokenService.fetchCSRFToken();
+		} catch (err) {
+			console.error('Failed to fetch CSRF token:', err);
 		}
 	});
 

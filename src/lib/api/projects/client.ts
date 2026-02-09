@@ -1,6 +1,7 @@
 import axios, { type AxiosInstance } from 'axios';
 import { config } from '$lib/config';
 import { tokenCookies } from '../auth/cookies';
+import { csrfTokenService } from '../csrf';
 import type {
 	Project,
 	Technology,
@@ -31,12 +32,24 @@ class ProjectsApiClient {
 			withCredentials: true
 		});
 
-		// Add request interceptor to include token
-		this.client.interceptors.request.use((config) => {
+		// Add request interceptor to include token and CSRF token
+		this.client.interceptors.request.use(async (config) => {
+			// Add Authorization token
 			const token = tokenCookies.getAccessToken();
 			if (token) {
 				config.headers.Authorization = `Bearer ${token}`;
 			}
+
+			// Add CSRF token for state-changing requests
+			const isStateChangingRequest = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(
+				config.method?.toUpperCase() || ''
+			);
+
+			if (isStateChangingRequest) {
+				const csrfToken = await csrfTokenService.ensureCSRFToken();
+				config.headers['X-CSRF-Token'] = csrfToken;
+			}
+
 			return config;
 		});
 	}

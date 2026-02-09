@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { ideasClient } from '$lib/api/ideas';
+	import { csrfTokenService } from '$lib/api/csrf';
 	import { isAuthenticated } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
 	import type { Idea } from '$lib/api/types';
@@ -40,6 +41,21 @@
 		}
 	}
 
+	async function toggleForm() {
+		showForm = !showForm;
+
+		// Fetch CSRF token when showing the form
+		if (showForm) {
+			try {
+				await csrfTokenService.fetchCSRFToken();
+			} catch (err) {
+				console.error('Failed to fetch CSRF token:', err);
+				error = 'Failed to prepare form. Please try again.';
+				showForm = false;
+			}
+		}
+	}
+
 	async function handleCreateIdea(e: SubmitEvent) {
 		e.preventDefault();
 		error = null;
@@ -76,7 +92,7 @@
 	<div class="mb-6 flex items-center justify-between">
 		<h1 class="text-3xl font-bold text-gray-900">Ideas</h1>
 		<button
-			onclick={() => (showForm = !showForm)}
+			onclick={toggleForm}
 			class="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 transition-colors"
 		>
 			{showForm ? 'Cancel' : '+ New Idea'}
