@@ -69,12 +69,12 @@ class AuthApiClient {
 							this.isRefreshing = false;
 
 							// Notify subscribers about the new token
-							this.refreshSubscribers.forEach((callback) => callback(response.accessToken));
+							this.refreshSubscribers.forEach((callback) => callback(response.access_token));
 							this.refreshSubscribers = [];
 
 							// Update the token and retry original request
-							tokenCookies.setAccessToken(response.accessToken);
-							originalRequest.headers.Authorization = `Bearer ${response.accessToken}`;
+							tokenCookies.setAccessToken(response.access_token);
+							originalRequest.headers.Authorization = `Bearer ${response.access_token}`;
 
 							return this.client(originalRequest);
 						} catch (refreshError) {
@@ -118,13 +118,13 @@ class AuthApiClient {
 
 			if (response.data.data) {
 				const authData = response.data.data;
-				// Store tokens
+				// Store tokens (backend returns snake_case field names)
 				tokenCookies.setAccessToken(
-					authData.accessToken,
-					authData.expiresIn ? authData.expiresIn / 3600 : 24
+					authData.access_token,
+					authData.expires_at ? (authData.expires_at - Math.floor(Date.now() / 1000)) / 3600 : 24
 				);
-				if (authData.refreshToken) {
-					tokenCookies.setRefreshToken(authData.refreshToken);
+				if (authData.refresh_token) {
+					tokenCookies.setRefreshToken(authData.refresh_token);
 				}
 
 				return authData;
@@ -145,13 +145,13 @@ class AuthApiClient {
 
 			if (response.data.data) {
 				const authData = response.data.data;
-				// Store tokens
+				// Store tokens (backend returns snake_case field names)
 				tokenCookies.setAccessToken(
-					authData.accessToken,
-					authData.expiresIn ? authData.expiresIn / 3600 : 24
+					authData.access_token,
+					authData.expires_at ? (authData.expires_at - Math.floor(Date.now() / 1000)) / 3600 : 24
 				);
-				if (authData.refreshToken) {
-					tokenCookies.setRefreshToken(authData.refreshToken);
+				if (authData.refresh_token) {
+					tokenCookies.setRefreshToken(authData.refresh_token);
 				}
 
 				return authData;
@@ -169,11 +169,20 @@ class AuthApiClient {
 	async refreshAccessToken(refreshToken: string): Promise<AuthResponse> {
 		try {
 			const response = await this.client.post<ApiResponse<AuthResponse>>('/refresh', {
-				refreshToken
+				refresh_token: refreshToken
 			});
 
 			if (response.data.data) {
-				return response.data.data;
+				const authData = response.data.data;
+				// Update stored tokens with new values
+				tokenCookies.setAccessToken(
+					authData.access_token,
+					authData.expires_at ? (authData.expires_at - Math.floor(Date.now() / 1000)) / 3600 : 24
+				);
+				if (authData.refresh_token) {
+					tokenCookies.setRefreshToken(authData.refresh_token);
+				}
+				return authData;
 			}
 
 			throw new Error('Invalid response format');
@@ -191,7 +200,7 @@ class AuthApiClient {
 
 			if (refreshToken) {
 				await this.client.post<ApiResponse>('/logout', {
-					refreshToken
+					refresh_token: refreshToken
 				});
 			}
 
