@@ -8,7 +8,10 @@
 	export let group: NavGroup;
 
 	$: collapsed = isGroupCollapsed(group.id);
-	$: IconComponent = (LucideIcons as any)[group.icon] || LucideIcons.Folder;
+	$: IconComponent =
+		group.icon && (LucideIcons as any)[group.icon]
+			? (LucideIcons as any)[group.icon]
+			: LucideIcons.Folder;
 </script>
 
 <div class="nav-group">
@@ -17,7 +20,6 @@
 		on:click={() => toggleGroup(group.id)}
 		class="group-header"
 		class:group-header-collapsed={$collapsed}
-		role="button"
 		aria-expanded={!$collapsed}
 	>
 		<span class="group-label">
@@ -74,21 +76,15 @@
 		text-align: left;
 	}
 
-	.group-chevron {
-		flex-shrink: 0;
-		transition: transform 0.2s ease;
-		color: inherit;
-	}
-
-	.group-header-collapsed .group-chevron {
-		transform: rotate(-90deg);
-	}
+	/* .group-chevron and .group-header-collapsed .group-chevron removed as unused */
 
 	.group-items {
 		display: flex;
 		flex-direction: column;
 		max-height: 500px;
-		transition: max-height 0.3s ease, opacity 0.2s ease;
+		transition:
+			max-height 0.3s ease,
+			opacity 0.2s ease;
 		opacity: 1;
 	}
 

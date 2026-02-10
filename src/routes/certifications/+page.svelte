@@ -4,7 +4,7 @@
 	import { csrfTokenService } from '$lib/api/csrf';
 	import { isAuthenticated } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
-	import type { Certification } from '$lib/api/certifications/types';
+	import type { Certification, PaginatedApiResponse } from '$lib/api/types';
 	import { Trash2, Plus, ExternalLink } from 'lucide-svelte';
 
 	let loading = true;
@@ -35,7 +35,9 @@
 		error = null;
 
 		try {
-			certifications = await certificationsClient.listCertifications();
+			const response: PaginatedApiResponse<Certification> =
+				await certificationsClient.listCertifications();
+			certifications = response.data;
 		} catch (err: any) {
 			error = err.message || 'Failed to load certifications';
 			console.error('Error loading certifications:', err);
@@ -122,7 +124,7 @@
 			</div>
 			<button
 				on:click={toggleForm}
-				class="flex items-center gap-2 rounded-lg bg-blue-600 text-white px-4 py-2 font-medium hover:bg-blue-700 transition-colors"
+				class="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700"
 			>
 				<Plus size={20} />
 				New Certification
@@ -139,10 +141,10 @@
 			<h2 class="mb-4 text-lg font-semibold text-gray-900">New Certification</h2>
 			<form
 				on:submit|preventDefault={createCertification}
-				class="grid gap-4 grid-cols-1 md:grid-cols-2"
+				class="grid grid-cols-1 gap-4 md:grid-cols-2"
 			>
 				<div>
-					<label for="name" class="block text-sm font-medium text-gray-700 mb-1">
+					<label for="name" class="mb-1 block text-sm font-medium text-gray-700">
 						Certification Name *
 					</label>
 					<input
@@ -150,12 +152,12 @@
 						type="text"
 						bind:value={newCertification.name}
 						placeholder="e.g., AWS Solutions Architect"
-						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:outline-none"
 					/>
 				</div>
 
 				<div>
-					<label for="issuer" class="block text-sm font-medium text-gray-700 mb-1">
+					<label for="issuer" class="mb-1 block text-sm font-medium text-gray-700">
 						Issuer *
 					</label>
 					<input
@@ -163,36 +165,36 @@
 						type="text"
 						bind:value={newCertification.issuer}
 						placeholder="e.g., Amazon Web Services"
-						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:outline-none"
 					/>
 				</div>
 
 				<div>
-					<label for="issueDate" class="block text-sm font-medium text-gray-700 mb-1">
+					<label for="issueDate" class="mb-1 block text-sm font-medium text-gray-700">
 						Issue Date *
 					</label>
 					<input
 						id="issueDate"
 						type="date"
 						bind:value={newCertification.issueDate}
-						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:outline-none"
 					/>
 				</div>
 
 				<div>
-					<label for="expiryDate" class="block text-sm font-medium text-gray-700 mb-1">
+					<label for="expiryDate" class="mb-1 block text-sm font-medium text-gray-700">
 						Expiry Date
 					</label>
 					<input
 						id="expiryDate"
 						type="date"
 						bind:value={newCertification.expiryDate}
-						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:outline-none"
 					/>
 				</div>
 
 				<div>
-					<label for="credentialId" class="block text-sm font-medium text-gray-700 mb-1">
+					<label for="credentialId" class="mb-1 block text-sm font-medium text-gray-700">
 						Credential ID
 					</label>
 					<input
@@ -200,12 +202,12 @@
 						type="text"
 						bind:value={newCertification.credentialId}
 						placeholder="e.g., Unique credential identifier"
-						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:outline-none"
 					/>
 				</div>
 
 				<div>
-					<label for="credentialUrl" class="block text-sm font-medium text-gray-700 mb-1">
+					<label for="credentialUrl" class="mb-1 block text-sm font-medium text-gray-700">
 						Credential URL
 					</label>
 					<input
@@ -213,22 +215,22 @@
 						type="url"
 						bind:value={newCertification.credentialUrl}
 						placeholder="https://verify.example.com"
-						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:outline-none"
 					/>
 				</div>
 
-				<div class="md:col-span-2 flex gap-2">
+				<div class="flex gap-2 md:col-span-2">
 					<button
 						type="submit"
 						disabled={creating}
-						class="flex-1 rounded-lg bg-blue-600 text-white px-4 py-2 font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+						class="flex-1 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
 					>
 						{creating ? 'Creating...' : 'Create Certification'}
 					</button>
 					<button
 						type="button"
 						on:click={toggleForm}
-						class="flex-1 rounded-lg border border-gray-300 bg-white text-gray-900 px-4 py-2 font-medium hover:bg-gray-50 transition-colors"
+						class="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2 font-medium text-gray-900 transition-colors hover:bg-gray-50"
 					>
 						Cancel
 					</button>
@@ -238,47 +240,67 @@
 	{/if}
 
 	{#if loading}
-		<div class="text-center py-12">
-			<div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+		<div class="py-12 text-center">
+			<div
+				class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"
+			></div>
 			<p class="mt-4 text-gray-600">Loading certifications...</p>
 		</div>
 	{:else if certifications.length === 0}
 		<div class="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-12 text-center">
-			<p class="text-gray-600">No certifications added yet. Add your first certification to showcase your credentials.</p>
+			<p class="text-gray-600">
+				No certifications added yet. Add your first certification to showcase your credentials.
+			</p>
 		</div>
 	{:else}
-		<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+		<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 			{#each certifications as cert (cert.id)}
-				<div class="rounded-lg border {isExpired(cert.expiryDate) ? 'border-red-200 bg-red-50' : isExpiringSoon(cert.expiryDate) ? 'border-yellow-200 bg-yellow-50' : 'border-gray-200'} p-6 shadow-sm hover:shadow-md transition-shadow">
-					<div class="flex items-start justify-between mb-3">
+				<div
+					class="rounded-lg border {isExpired(cert.expiryDate)
+						? 'border-red-200 bg-red-50'
+						: isExpiringSoon(cert.expiryDate)
+							? 'border-yellow-200 bg-yellow-50'
+							: 'border-gray-200'} p-6 shadow-sm transition-shadow hover:shadow-md"
+				>
+					<div class="mb-3 flex items-start justify-between">
 						<div class="flex-1">
 							<h3 class="text-lg font-semibold text-gray-900">{cert.name}</h3>
 							<p class="text-gray-600">{cert.issuer}</p>
 						</div>
 						<button
 							on:click={() => deleteCertification(cert.id)}
-							class="inline-flex items-center gap-2 rounded px-2 py-1 text-red-600 hover:bg-red-50 transition-colors"
+							class="inline-flex items-center gap-2 rounded px-2 py-1 text-red-600 transition-colors hover:bg-red-50"
 							title="Delete certification"
 						>
 							<Trash2 size={16} />
 						</button>
 					</div>
 
-					<div class="space-y-2 mb-4 text-sm text-gray-700">
+					<div class="mb-4 space-y-2 text-sm text-gray-700">
 						<p>
 							<span class="font-medium">Issue Date:</span>
 							{new Date(cert.issueDate).toLocaleDateString()}
 						</p>
 						{#if cert.expiryDate}
-							<p class={isExpired(cert.expiryDate) ? 'text-red-700 font-medium' : isExpiringSoon(cert.expiryDate) ? 'text-yellow-700 font-medium' : ''}>
+							<p
+								class={isExpired(cert.expiryDate)
+									? 'font-medium text-red-700'
+									: isExpiringSoon(cert.expiryDate)
+										? 'font-medium text-yellow-700'
+										: ''}
+							>
 								<span class="font-medium">Expiry Date:</span>
 								{new Date(cert.expiryDate).toLocaleDateString()}
 								{#if isExpired(cert.expiryDate)}
-									<span class="ml-2 inline-block rounded-full bg-red-200 text-red-800 px-2 py-1 text-xs font-bold">
+									<span
+										class="ml-2 inline-block rounded-full bg-red-200 px-2 py-1 text-xs font-bold text-red-800"
+									>
 										Expired
 									</span>
 								{:else if isExpiringSoon(cert.expiryDate)}
-									<span class="ml-2 inline-block rounded-full bg-yellow-200 text-yellow-800 px-2 py-1 text-xs font-bold">
+									<span
+										class="ml-2 inline-block rounded-full bg-yellow-200 px-2 py-1 text-xs font-bold text-yellow-800"
+									>
 										Expiring Soon
 									</span>
 								{/if}
@@ -297,7 +319,7 @@
 							href={cert.credentialUrl}
 							target="_blank"
 							rel="noopener noreferrer"
-							class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium text-sm"
+							class="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-800"
 						>
 							View Credential
 							<ExternalLink size={14} />

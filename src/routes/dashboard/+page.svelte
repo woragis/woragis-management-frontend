@@ -4,10 +4,11 @@
 	import { dashboardClient } from '$lib/api/dashboard';
 	import { goto } from '$app/navigation';
 	import { TrendingUp, Lightbulb, Users, Zap } from 'lucide-svelte';
+	import type { DashboardStats } from '$lib/api/types';
 
 	let loading = true;
 	let error: string | null = null;
-	let stats = {
+	let stats: DashboardStats = {
 		totalProjects: 0,
 		activeProjects: 0,
 		completedProjects: 0,
@@ -62,34 +63,44 @@
 	</div>
 
 	{#if loading}
-		<div class="text-center py-12">
-			<div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+		<div class="py-12 text-center">
+			<div
+				class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"
+			></div>
 			<p class="mt-4 text-gray-600">Loading dashboard...</p>
 		</div>
 	{:else}
 		<!-- Stats Grid -->
-		<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+		<div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
 			<!-- Projects Card -->
-			<div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
-				<div class="flex items-center justify-between mb-4">
-					<p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Projects</p>
-					<div class="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
+			<div
+				class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+			>
+				<div class="mb-4 flex items-center justify-between">
+					<p class="text-sm font-medium tracking-wide text-gray-600 uppercase">Projects</p>
+					<div
+						class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 text-blue-600"
+					>
 						<TrendingUp size={20} />
 					</div>
 				</div>
 				<p class="text-3xl font-bold text-gray-900">{stats.totalProjects}</p>
 				<p class="mt-2 text-sm text-gray-600">
-					<span class="text-green-600 font-medium">{stats.activeProjects} active</span>
+					<span class="font-medium text-green-600">{stats.activeProjects} active</span>
 					<span class="text-gray-400">•</span>
-					<span class="text-blue-600 font-medium">{stats.completedProjects} completed</span>
+					<span class="font-medium text-blue-600">{stats.completedProjects} completed</span>
 				</p>
 			</div>
 
 			<!-- Ideas Card -->
-			<div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
-				<div class="flex items-center justify-between mb-4">
-					<p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Ideas</p>
-					<div class="h-10 w-10 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600">
+			<div
+				class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+			>
+				<div class="mb-4 flex items-center justify-between">
+					<p class="text-sm font-medium tracking-wide text-gray-600 uppercase">Ideas</p>
+					<div
+						class="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 text-amber-600"
+					>
 						<Lightbulb size={20} />
 					</div>
 				</div>
@@ -98,10 +109,14 @@
 			</div>
 
 			<!-- Clients Card -->
-			<div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
-				<div class="flex items-center justify-between mb-4">
-					<p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Clients</p>
-					<div class="h-10 w-10 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600">
+			<div
+				class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+			>
+				<div class="mb-4 flex items-center justify-between">
+					<p class="text-sm font-medium tracking-wide text-gray-600 uppercase">Clients</p>
+					<div
+						class="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100 text-purple-600"
+					>
 						<Users size={20} />
 					</div>
 				</div>
@@ -110,10 +125,14 @@
 			</div>
 
 			<!-- Performance Card -->
-			<div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
-				<div class="flex items-center justify-between mb-4">
-					<p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Performance</p>
-					<div class="h-10 w-10 rounded-lg bg-green-100 flex items-center justify-center text-green-600">
+			<div
+				class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+			>
+				<div class="mb-4 flex items-center justify-between">
+					<p class="text-sm font-medium tracking-wide text-gray-600 uppercase">Performance</p>
+					<div
+						class="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 text-green-600"
+					>
 						<Zap size={20} />
 					</div>
 				</div>
@@ -128,18 +147,30 @@
 
 		<!-- Quick Actions -->
 		<div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-			<h2 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+			<h2 class="mb-4 text-lg font-semibold text-gray-900">Quick Actions</h2>
 			<div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-				<a href="/projects" class="rounded-lg bg-blue-600 text-white px-4 py-2 font-medium text-sm hover:bg-blue-700 transition-colors text-center">
+				<a
+					href="/projects"
+					class="rounded-lg bg-blue-600 px-4 py-2 text-center text-sm font-medium text-white transition-colors hover:bg-blue-700"
+				>
 					+ New Project
 				</a>
-				<a href="/ideas" class="rounded-lg border border-gray-300 bg-white text-gray-900 px-4 py-2 font-medium text-sm hover:bg-gray-50 transition-colors text-center">
+				<a
+					href="/ideas"
+					class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-center text-sm font-medium text-gray-900 transition-colors hover:bg-gray-50"
+				>
 					+ New Idea
 				</a>
-				<a href="/clients" class="rounded-lg border border-gray-300 bg-white text-gray-900 px-4 py-2 font-medium text-sm hover:bg-gray-50 transition-colors text-center">
+				<a
+					href="/clients"
+					class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-center text-sm font-medium text-gray-900 transition-colors hover:bg-gray-50"
+				>
 					+ New Client
 				</a>
-				<a href="/scheduler" class="rounded-lg border border-gray-300 bg-white text-gray-900 px-4 py-2 font-medium text-sm hover:bg-gray-50 transition-colors text-center">
+				<a
+					href="/scheduler"
+					class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-center text-sm font-medium text-gray-900 transition-colors hover:bg-gray-50"
+				>
 					Plan Task
 				</a>
 			</div>

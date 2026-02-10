@@ -1,4 +1,25 @@
 <script lang="ts">
+	let github = '';
+	let linkedin = '';
+	let twitter = '';
+
+	function syncSocialLinksFromProfile() {
+		if (!profile.socialLinks) profile.socialLinks = {};
+		github = profile.socialLinks.github || '';
+		linkedin = profile.socialLinks.linkedin || '';
+		twitter = profile.socialLinks.twitter || '';
+	}
+
+	function updateSocialLinks() {
+		if (!profile.socialLinks) profile.socialLinks = {};
+		profile.socialLinks.github = github;
+		profile.socialLinks.linkedin = linkedin;
+		profile.socialLinks.twitter = twitter;
+	}
+
+	onMount(() => {
+		syncSocialLinksFromProfile();
+	});
 	import { onMount } from 'svelte';
 	import { userProfilesClient } from '$lib/api/user-profiles';
 	import { csrfTokenService } from '$lib/api/csrf';
@@ -12,19 +33,22 @@
 	let success = false;
 	let isEditing = false;
 	let saving = false;
-	let profile = {
+	let profile: UserProfile = {
+		id: '',
+		userId: '',
 		firstName: '',
 		lastName: '',
-		email: '',
 		bio: '',
 		avatar: '',
-		phone: '',
-		location: '',
 		website: '',
-		github: '',
-		linkedin: '',
-		twitter: ''
+		location: '',
+		socialLinks: {},
+		publicProfile: false,
+		createdAt: '',
+		updatedAt: ''
 	};
+
+	$: if (!profile.socialLinks) profile.socialLinks = {};
 
 	onMount(async () => {
 		if (!$isAuthenticated) {
@@ -40,14 +64,13 @@
 		error = null;
 
 		try {
-			const data = await userProfilesClient.getUserProfile($user!.id);
+			const data = await userProfilesClient.getProfile();
 			profile = data;
 		} catch (err: any) {
 			console.warn('Failed to load profile, using auth data:', err);
 			// Use data from auth store if endpoint not available
 			profile.firstName = $user?.firstName || '';
 			profile.lastName = $user?.lastName || '';
-			profile.email = $user?.email || '';
 		} finally {
 			loading = false;
 		}
@@ -72,7 +95,7 @@
 		success = false;
 
 		try {
-			await userProfilesClient.updateUserProfile($user!.id, profile);
+			await userProfilesClient.updateProfile(profile);
 			success = true;
 			isEditing = false;
 			setTimeout(() => (success = false), 3000);
@@ -85,7 +108,7 @@
 	}
 </script>
 
-<div class="container mx-auto px-4 py-8 max-w-2xl">
+<div class="container mx-auto max-w-2xl px-4 py-8">
 	<div class="mb-8 flex items-center justify-between">
 		<div>
 			<h1 class="text-3xl font-bold text-gray-900">My Profile</h1>
@@ -93,7 +116,9 @@
 		</div>
 		<button
 			on:click={toggleEdit}
-			class="flex items-center gap-2 rounded-lg {isEditing ? 'bg-gray-200 text-gray-900' : 'bg-blue-600 text-white'} px-4 py-2 font-medium hover:opacity-90 transition-opacity"
+			class="flex items-center gap-2 rounded-lg {isEditing
+				? 'bg-gray-200 text-gray-900'
+				: 'bg-blue-600 text-white'} px-4 py-2 font-medium transition-opacity hover:opacity-90"
 		>
 			<Edit2 size={20} />
 			{isEditing ? 'Cancel' : 'Edit Profile'}
@@ -109,18 +134,20 @@
 	{/if}
 
 	{#if loading}
-		<div class="text-center py-12">
-			<div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+		<div class="py-12 text-center">
+			<div
+				class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"
+			></div>
 			<p class="mt-4 text-gray-600">Loading profile...</p>
 		</div>
 	{:else}
 		<div class="space-y-6">
 			<!-- Basic Information -->
 			<div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-				<h2 class="text-lg font-semibold text-gray-900 mb-4">Basic Information</h2>
-				<div class="grid gap-4 grid-cols-1 md:grid-cols-2">
+				<h2 class="mb-4 text-lg font-semibold text-gray-900">Basic Information</h2>
+				<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 					<div>
-						<label for="firstName" class="block text-sm font-medium text-gray-700 mb-1">
+						<label for="firstName" class="mb-1 block text-sm font-medium text-gray-700">
 							First Name
 						</label>
 						<input
@@ -128,12 +155,12 @@
 							type="text"
 							bind:value={profile.firstName}
 							disabled={!isEditing}
-							class={`w-full rounded-lg border px-3 py-2 {isEditing ? 'border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600' : 'border-gray-200 bg-gray-50 text-gray-900 cursor-default'}`}
+							class={`{isEditing ? 'border-gray-300 focus:ring-blue-600' : 'border-gray-200 cursor-default'} w-full rounded-lg border bg-gray-50 px-3 py-2 text-gray-900 text-gray-900 focus:ring-2 focus:outline-none`}
 						/>
 					</div>
 
 					<div>
-						<label for="lastName" class="block text-sm font-medium text-gray-700 mb-1">
+						<label for="lastName" class="mb-1 block text-sm font-medium text-gray-700">
 							Last Name
 						</label>
 						<input
@@ -141,46 +168,34 @@
 							type="text"
 							bind:value={profile.lastName}
 							disabled={!isEditing}
-							class={`w-full rounded-lg border px-3 py-2 {isEditing ? 'border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600' : 'border-gray-200 bg-gray-50 text-gray-900 cursor-default'}`}
+							class={`{isEditing ? 'border-gray-300 focus:ring-blue-600' : 'border-gray-200 cursor-default'} w-full rounded-lg border bg-gray-50 px-3 py-2 text-gray-900 text-gray-900 focus:ring-2 focus:outline-none`}
 						/>
 					</div>
 
 					<div class="md:col-span-2">
-						<label for="email" class="block text-sm font-medium text-gray-700 mb-1">
-							Email
-						</label>
+						<label for="email" class="mb-1 block text-sm font-medium text-gray-700"> Email </label>
 						<input
 							id="email"
 							type="email"
-							bind:value={profile.email}
+							value={$user?.email}
 							disabled
-							class="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-gray-900 cursor-default"
+							class="w-full cursor-default rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-gray-900"
 						/>
-						<p class="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+						<p class="mt-1 text-xs text-gray-500">Email cannot be changed</p>
 					</div>
 				</div>
 			</div>
 
 			<!-- Contact Information -->
 			<div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-				<h2 class="text-lg font-semibold text-gray-900 mb-4">Contact Information</h2>
-				<div class="grid gap-4 grid-cols-1 md:grid-cols-2">
+				<h2 class="mb-4 text-lg font-semibold text-gray-900">Contact Information</h2>
+				<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 					<div>
-						<label for="phone" class="block text-sm font-medium text-gray-700 mb-1">
-							Phone
-						</label>
-						<input
-							id="phone"
-							type="tel"
-							bind:value={profile.phone}
-							disabled={!isEditing}
-							placeholder="e.g., +1 (555) 123-4567"
-							class={`w-full rounded-lg border px-3 py-2 {isEditing ? 'border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600' : 'border-gray-200 bg-gray-50 text-gray-900 cursor-default'}`}
-						/>
+						<!-- Phone field removed: not present in backend UserProfile -->
 					</div>
 
 					<div>
-						<label for="location" class="block text-sm font-medium text-gray-700 mb-1">
+						<label for="location" class="mb-1 block text-sm font-medium text-gray-700">
 							Location
 						</label>
 						<input
@@ -189,21 +204,19 @@
 							bind:value={profile.location}
 							disabled={!isEditing}
 							placeholder="e.g., San Francisco, CA"
-							class={`w-full rounded-lg border px-3 py-2 {isEditing ? 'border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600' : 'border-gray-200 bg-gray-50 text-gray-900 cursor-default'}`}
+							class={`{isEditing ? 'border-gray-300 focus:ring-blue-600' : 'border-gray-200 cursor-default'} w-full rounded-lg border bg-gray-50 px-3 py-2 text-gray-900 text-gray-900 focus:ring-2 focus:outline-none`}
 						/>
 					</div>
 
 					<div class="md:col-span-2">
-						<label for="bio" class="block text-sm font-medium text-gray-700 mb-1">
-							Bio
-						</label>
+						<label for="bio" class="mb-1 block text-sm font-medium text-gray-700"> Bio </label>
 						<textarea
 							id="bio"
 							bind:value={profile.bio}
 							disabled={!isEditing}
 							placeholder="Tell us about yourself"
 							rows="3"
-							class={`w-full rounded-lg border px-3 py-2 {isEditing ? 'border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600' : 'border-gray-200 bg-gray-50 text-gray-900 cursor-default'}`}
+							class={`{isEditing ? 'border-gray-300 focus:ring-blue-600' : 'border-gray-200 cursor-default'} w-full rounded-lg border bg-gray-50 px-3 py-2 text-gray-900 text-gray-900 focus:ring-2 focus:outline-none`}
 						></textarea>
 					</div>
 				</div>
@@ -211,10 +224,10 @@
 
 			<!-- Social Links -->
 			<div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-				<h2 class="text-lg font-semibold text-gray-900 mb-4">Social Links</h2>
-				<div class="grid gap-4 grid-cols-1 md:grid-cols-2">
+				<h2 class="mb-4 text-lg font-semibold text-gray-900">Social Links</h2>
+				<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 					<div>
-						<label for="website" class="block text-sm font-medium text-gray-700 mb-1">
+						<label for="website" class="mb-1 block text-sm font-medium text-gray-700">
 							Website
 						</label>
 						<input
@@ -223,49 +236,52 @@
 							bind:value={profile.website}
 							disabled={!isEditing}
 							placeholder="https://example.com"
-							class={`w-full rounded-lg border px-3 py-2 {isEditing ? 'border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600' : 'border-gray-200 bg-gray-50 text-gray-900 cursor-default'}`}
+							class={`{isEditing ? 'border-gray-300 focus:ring-blue-600' : 'border-gray-200 cursor-default'} w-full rounded-lg border bg-gray-50 px-3 py-2 text-gray-900 text-gray-900 focus:ring-2 focus:outline-none`}
 						/>
 					</div>
 
 					<div>
-						<label for="github" class="block text-sm font-medium text-gray-700 mb-1">
+						<label for="github" class="mb-1 block text-sm font-medium text-gray-700">
 							GitHub
 						</label>
 						<input
 							id="github"
 							type="url"
-							bind:value={profile.github}
+							bind:value={github}
+							on:input={updateSocialLinks}
 							disabled={!isEditing}
 							placeholder="https://github.com/username"
-							class={`w-full rounded-lg border px-3 py-2 {isEditing ? 'border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600' : 'border-gray-200 bg-gray-50 text-gray-900 cursor-default'}`}
+							class={`{isEditing ? 'border-gray-300 focus:ring-blue-600' : 'border-gray-200 cursor-default'} w-full rounded-lg border bg-gray-50 px-3 py-2 text-gray-900 text-gray-900 focus:ring-2 focus:outline-none`}
 						/>
 					</div>
 
 					<div>
-						<label for="linkedin" class="block text-sm font-medium text-gray-700 mb-1">
+						<label for="linkedin" class="mb-1 block text-sm font-medium text-gray-700">
 							LinkedIn
 						</label>
 						<input
 							id="linkedin"
 							type="url"
-							bind:value={profile.linkedin}
+							bind:value={linkedin}
+							on:input={updateSocialLinks}
 							disabled={!isEditing}
 							placeholder="https://linkedin.com/in/username"
-							class={`w-full rounded-lg border px-3 py-2 {isEditing ? 'border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600' : 'border-gray-200 bg-gray-50 text-gray-900 cursor-default'}`}
+							class={`{isEditing ? 'border-gray-300 focus:ring-blue-600' : 'border-gray-200 cursor-default'} w-full rounded-lg border bg-gray-50 px-3 py-2 text-gray-900 text-gray-900 focus:ring-2 focus:outline-none`}
 						/>
 					</div>
 
 					<div>
-						<label for="twitter" class="block text-sm font-medium text-gray-700 mb-1">
+						<label for="twitter" class="mb-1 block text-sm font-medium text-gray-700">
 							Twitter
 						</label>
 						<input
 							id="twitter"
 							type="url"
-							bind:value={profile.twitter}
+							bind:value={twitter}
+							on:input={updateSocialLinks}
 							disabled={!isEditing}
 							placeholder="https://twitter.com/username"
-							class={`w-full rounded-lg border px-3 py-2 {isEditing ? 'border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600' : 'border-gray-200 bg-gray-50 text-gray-900 cursor-default'}`}
+							class={`{isEditing ? 'border-gray-300 focus:ring-blue-600' : 'border-gray-200 cursor-default'} w-full rounded-lg border bg-gray-50 px-3 py-2 text-gray-900 text-gray-900 focus:ring-2 focus:outline-none`}
 						/>
 					</div>
 				</div>
@@ -277,14 +293,14 @@
 					<button
 						on:click={saveProfile}
 						disabled={saving}
-						class="flex items-center gap-2 rounded-lg bg-blue-600 text-white px-4 py-2 font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+						class="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
 					>
 						<Save size={20} />
 						{saving ? 'Saving...' : 'Save Profile'}
 					</button>
 					<button
 						on:click={toggleEdit}
-						class="rounded-lg border border-gray-300 bg-white text-gray-900 px-4 py-2 font-medium hover:bg-gray-50 transition-colors"
+						class="rounded-lg border border-gray-300 bg-white px-4 py-2 font-medium text-gray-900 transition-colors hover:bg-gray-50"
 					>
 						Cancel
 					</button>

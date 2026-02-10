@@ -94,7 +94,7 @@
 		<h1 class="text-3xl font-bold text-gray-900">Clients</h1>
 		<button
 			onclick={toggleForm}
-			class="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 transition-colors"
+			class="rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
 		>
 			{showForm ? 'Cancel' : '+ New Client'}
 		</button>
@@ -109,7 +109,7 @@
 			<h2 class="mb-4 text-xl font-semibold text-gray-900">Add New Client</h2>
 			<form class="space-y-4" onsubmit={handleCreateClient}>
 				<div>
-					<label for="name" class="block text-sm font-medium text-gray-700 mb-1">
+					<label for="name" class="mb-1 block text-sm font-medium text-gray-700">
 						Client Name
 					</label>
 					<input
@@ -119,40 +119,36 @@
 						bind:value={newClient.name}
 						required
 						disabled={creating}
-						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
 					/>
 				</div>
 
 				<div>
-					<label for="email" class="block text-sm font-medium text-gray-700 mb-1">
-						Email
-					</label>
+					<label for="email" class="mb-1 block text-sm font-medium text-gray-700"> Email </label>
 					<input
 						id="email"
 						type="email"
 						placeholder="client@example.com"
 						bind:value={newClient.email}
 						disabled={creating}
-						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
 					/>
 				</div>
 
 				<div>
-					<label for="phone" class="block text-sm font-medium text-gray-700 mb-1">
-						Phone
-					</label>
+					<label for="phone" class="mb-1 block text-sm font-medium text-gray-700"> Phone </label>
 					<input
 						id="phone"
 						type="tel"
 						placeholder="+1 (555) 000-0000"
 						bind:value={newClient.phone}
 						disabled={creating}
-						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
 					/>
 				</div>
 
 				<div>
-					<label for="company" class="block text-sm font-medium text-gray-700 mb-1">
+					<label for="company" class="mb-1 block text-sm font-medium text-gray-700">
 						Company
 					</label>
 					<input
@@ -161,14 +157,14 @@
 						placeholder="Company name"
 						bind:value={newClient.company}
 						disabled={creating}
-						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
 					/>
 				</div>
 
 				<button
 					type="submit"
 					disabled={creating}
-					class="w-full rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+					class="w-full rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
 				>
 					{#if creating}
 						Adding...
@@ -181,8 +177,10 @@
 	{/if}
 
 	{#if loading}
-		<div class="text-center py-12">
-			<div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+		<div class="py-12 text-center">
+			<div
+				class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"
+			></div>
 			<p class="mt-4 text-gray-600">Loading clients...</p>
 		</div>
 	{:else if clients.length === 0}
@@ -192,7 +190,9 @@
 	{:else}
 		<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 			{#each clients as client (client.id)}
-				<div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
+				<div
+					class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
+				>
 					<h3 class="text-lg font-semibold text-gray-900">{client.name}</h3>
 					<div class="mt-2 space-y-1 text-sm text-gray-600">
 						{#if client.email}
@@ -207,7 +207,7 @@
 					</div>
 					<button
 						onclick={() => handleDeleteClient(client.id)}
-						class="mt-4 w-full rounded-md border border-red-300 px-3 py-2 text-sm text-red-700 hover:bg-red-50 transition-colors"
+						class="mt-4 w-full rounded-md border border-red-300 px-3 py-2 text-sm text-red-700 transition-colors hover:bg-red-50"
 					>
 						Delete
 					</button>

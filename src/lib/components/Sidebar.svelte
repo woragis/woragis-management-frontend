@@ -1,6 +1,12 @@
 <script lang="ts">
 	import { X, LogOut, Settings } from 'lucide-svelte';
-	import { sidebarCollapsed, sidebarOpen, toggleMobileSidebar, closeMobileSidebar } from '$lib/stores/sidebar';
+	import { onMount } from 'svelte';
+	import {
+		sidebarCollapsed,
+		sidebarOpen,
+		toggleMobileSidebar,
+		closeMobileSidebar
+	} from '$lib/stores/sidebar';
 	import { authClient } from '$lib/api/auth';
 	import { goto } from '$app/navigation';
 	import NavItem from './NavItem.svelte';
@@ -11,7 +17,7 @@
 	let isMobile = false;
 
 	// Detect mobile on mount
-	$: if (typeof window !== 'undefined') {
+	onMount(() => {
 		const checkMobile = () => {
 			isMobile = window.innerWidth < 768;
 		};
@@ -20,7 +26,7 @@
 		window.addEventListener('resize', checkMobile);
 
 		return () => window.removeEventListener('resize', checkMobile);
-	}
+	});
 
 	// Close sidebar on escape key
 	function handleKeydown(e: KeyboardEvent) {
@@ -53,7 +59,7 @@
 		on:click={closeMobileSidebar}
 		role="presentation"
 		aria-hidden="true"
-	/>
+	></div>
 {/if}
 
 <!-- Sidebar -->
@@ -72,18 +78,14 @@
 			<span class="logo-text">Woragis</span>
 		</div>
 		{#if isMobile}
-			<button
-				on:click={closeMobileSidebar}
-				class="close-button"
-				aria-label="Close sidebar"
-			>
+			<button on:click={closeMobileSidebar} class="close-button" aria-label="Close sidebar">
 				<X size={20} />
 			</button>
 		{/if}
 	</div>
 
 	<!-- Main Navigation -->
-	<nav class="sidebar-nav" role="menu">
+	<nav class="sidebar-nav">
 		<!-- Primary Items -->
 		<div class="nav-section">
 			{#each navigationConfig.primaryItems as item (item.id)}
@@ -103,11 +105,7 @@
 	<div class="sidebar-footer">
 		<!-- Footer Items -->
 		{#each navigationConfig.footerItems as item (item.id)}
-			<button
-				on:click={() => handleFooterItemClick(item)}
-				class="footer-item"
-				role="menuitem"
-			>
+			<button on:click={() => handleFooterItemClick(item)} class="footer-item" role="menuitem">
 				<div class="footer-item-icon">
 					<!-- Icon placeholder -->
 				</div>
@@ -116,11 +114,7 @@
 		{/each}
 
 		<!-- Logout -->
-		<button
-			on:click={handleLogout}
-			class="footer-item footer-item-logout"
-			role="menuitem"
-		>
+		<button on:click={handleLogout} class="footer-item footer-item-logout" role="menuitem">
 			<LogOut size={20} />
 			<span class="footer-item-label">Logout</span>
 		</button>

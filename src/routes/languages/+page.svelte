@@ -4,7 +4,7 @@
 	import { csrfTokenService } from '$lib/api/csrf';
 	import { isAuthenticated } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
-	import type { Language } from '$lib/api/types';
+	import type { Language, PaginatedApiResponse } from '$lib/api/types';
 	import { Trash2, Plus } from 'lucide-svelte';
 
 	let loading = true;
@@ -39,7 +39,8 @@
 		error = null;
 
 		try {
-			languages = await languagesClient.listLanguages();
+			const response: PaginatedApiResponse<Language> = await languagesClient.listLanguages();
+			languages = response.data;
 		} catch (err: any) {
 			error = err.message || 'Failed to load languages';
 			console.error('Error loading languages:', err);
@@ -120,7 +121,7 @@
 			</div>
 			<button
 				on:click={toggleForm}
-				class="flex items-center gap-2 rounded-lg bg-blue-600 text-white px-4 py-2 font-medium hover:bg-blue-700 transition-colors"
+				class="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700"
 			>
 				<Plus size={20} />
 				Add Language
@@ -135,12 +136,9 @@
 	{#if showForm}
 		<div class="mb-8 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
 			<h2 class="mb-4 text-lg font-semibold text-gray-900">Add Language</h2>
-			<form
-				on:submit|preventDefault={createLanguage}
-				class="grid gap-4 grid-cols-1 md:grid-cols-2"
-			>
+			<form on:submit|preventDefault={createLanguage} class="grid grid-cols-1 gap-4 md:grid-cols-2">
 				<div>
-					<label for="name" class="block text-sm font-medium text-gray-700 mb-1">
+					<label for="name" class="mb-1 block text-sm font-medium text-gray-700">
 						Language Name *
 					</label>
 					<input
@@ -148,18 +146,18 @@
 						type="text"
 						bind:value={newLanguage.name}
 						placeholder="e.g., Spanish, Portuguese"
-						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:outline-none"
 					/>
 				</div>
 
 				<div>
-					<label for="proficiency" class="block text-sm font-medium text-gray-700 mb-1">
+					<label for="proficiency" class="mb-1 block text-sm font-medium text-gray-700">
 						Proficiency Level
 					</label>
 					<select
 						id="proficiency"
 						bind:value={newLanguage.proficiency}
-						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:outline-none"
 					>
 						{#each proficiencyLevels as level}
 							<option value={level.value}>{level.label}</option>
@@ -167,18 +165,18 @@
 					</select>
 				</div>
 
-				<div class="md:col-span-2 flex gap-2">
+				<div class="flex gap-2 md:col-span-2">
 					<button
 						type="submit"
 						disabled={creating}
-						class="flex-1 rounded-lg bg-blue-600 text-white px-4 py-2 font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+						class="flex-1 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
 					>
 						{creating ? 'Adding...' : 'Add Language'}
 					</button>
 					<button
 						type="button"
 						on:click={toggleForm}
-						class="flex-1 rounded-lg border border-gray-300 bg-white text-gray-900 px-4 py-2 font-medium hover:bg-gray-50 transition-colors"
+						class="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2 font-medium text-gray-900 transition-colors hover:bg-gray-50"
 					>
 						Cancel
 					</button>
@@ -188,31 +186,40 @@
 	{/if}
 
 	{#if loading}
-		<div class="text-center py-12">
-			<div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+		<div class="py-12 text-center">
+			<div
+				class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"
+			></div>
 			<p class="mt-4 text-gray-600">Loading languages...</p>
 		</div>
 	{:else if languages.length === 0}
 		<div class="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-12 text-center">
-			<p class="text-gray-600">No languages added yet. Add your language proficiencies to get started.</p>
+			<p class="text-gray-600">
+				No languages added yet. Add your language proficiencies to get started.
+			</p>
 		</div>
 	{:else}
-		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+		<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 			{#each languages as language (language.id)}
-				<div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
-					<div class="flex items-center justify-between mb-2">
+				<div
+					class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
+				>
+					<div class="mb-2 flex items-center justify-between">
 						<h3 class="text-lg font-semibold text-gray-900">{language.name}</h3>
 						<button
 							on:click={() => deleteLanguage(language.id)}
-							class="inline-flex items-center gap-2 rounded px-2 py-1 text-red-600 hover:bg-red-50 transition-colors"
+							class="inline-flex items-center gap-2 rounded px-2 py-1 text-red-600 transition-colors hover:bg-red-50"
 							title="Delete language"
 						>
 							<Trash2 size={16} />
 						</button>
 					</div>
 
-					<div class={`inline-block rounded-full px-3 py-1 text-sm font-medium ${getProficiencyColor(language.proficiency)}`}>
-						{proficiencyLevels.find((l) => l.value === language.proficiency)?.label || language.proficiency}
+					<div
+						class={`inline-block rounded-full px-3 py-1 text-sm font-medium ${getProficiencyColor(language.proficiency)}`}
+					>
+						{proficiencyLevels.find((l) => l.value === language.proficiency)?.label ||
+							language.proficiency}
 					</div>
 				</div>
 			{/each}

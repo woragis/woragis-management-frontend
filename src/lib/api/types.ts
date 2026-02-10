@@ -1,3 +1,47 @@
+// ============================================================================
+// DASHBOARD
+// ============================================================================
+
+export interface DashboardStats {
+	totalProjects: number;
+	activeProjects: number;
+	completedProjects: number;
+	totalIdeas: number;
+	totalClients: number;
+	recentTransactions: any[];
+	upcomingTasks: any[];
+}
+
+// ============================================================================
+// TRANSACTIONS
+// ============================================================================
+
+export interface Transaction {
+	id: string;
+	userId: string;
+	description: string;
+	amount: number;
+	type: 'income' | 'expense';
+	category: string;
+	date: string;
+	createdAt: string;
+	updatedAt: string;
+}
+// ============================================================================
+// CERTIFICATIONS
+// ============================================================================
+
+export interface Certification {
+	id: string;
+	name: string;
+	issuer: string;
+	issueDate: string;
+	expiryDate?: string;
+	credentialUrl?: string;
+	credentialId?: string;
+	createdAt: string;
+	updatedAt: string;
+}
 /**
  * Management API Domain Types
  * Types for all management service domains

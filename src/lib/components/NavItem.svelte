@@ -12,7 +12,8 @@
 	let showTooltip = false;
 	let tooltipTimer: ReturnType<typeof setTimeout>;
 
-	$: isActive = $page.url.pathname === item.route || $page.url.pathname.startsWith(item.route + '/');
+	$: isActive =
+		$page.url.pathname === item.route || $page.url.pathname.startsWith(item.route + '/');
 
 	// Get icon component
 	$: IconComponent = (LucideIcons as any)[item.icon] || LucideIcons.Link;
@@ -63,9 +64,9 @@
 	{#if item.badge}
 		<div class="nav-item-badge">
 			{#if item.badge === 'new'}
-				<span class="text-xs px-1.5 py-0.5 bg-indigo-500 text-white rounded">New</span>
+				<span class="rounded bg-indigo-500 px-1.5 py-0.5 text-xs text-white">New</span>
 			{:else}
-				<span class="text-xs px-1.5 py-0.5 bg-indigo-500 text-white rounded">{item.badge}</span>
+				<span class="rounded bg-indigo-500 px-1.5 py-0.5 text-xs text-white">{item.badge}</span>
 			{/if}
 		</div>
 	{/if}

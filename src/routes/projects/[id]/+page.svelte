@@ -75,14 +75,16 @@
 <div class="container mx-auto px-4 py-8">
 	<button
 		onclick={() => goto('/projects')}
-		class="mb-6 rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+		class="mb-6 rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50"
 	>
 		← Back to Projects
 	</button>
 
 	{#if loading}
-		<div class="text-center py-12">
-			<div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+		<div class="py-12 text-center">
+			<div
+				class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"
+			></div>
 			<p class="mt-4 text-gray-600">Loading project...</p>
 		</div>
 	{:else if error}
@@ -90,7 +92,7 @@
 			<p>{error}</p>
 			<button
 				onclick={loadProject}
-				class="mt-4 rounded-lg border border-red-300 px-4 py-2 text-sm hover:bg-red-100 transition-colors"
+				class="mt-4 rounded-lg border border-red-300 px-4 py-2 text-sm transition-colors hover:bg-red-100"
 			>
 				Try Again
 			</button>
@@ -101,7 +103,7 @@
 				<h1 class="text-3xl font-bold text-gray-900">{project.name}</h1>
 				<button
 					onclick={handleDelete}
-					class="rounded-lg border border-red-300 px-4 py-2 text-sm text-red-700 hover:bg-red-50 transition-colors"
+					class="rounded-lg border border-red-300 px-4 py-2 text-sm text-red-700 transition-colors hover:bg-red-50"
 				>
 					Delete
 				</button>
@@ -113,7 +115,7 @@
 					<select
 						value={project.status || 'planning'}
 						onchange={(e) => handleStatusChange(e.currentTarget.value)}
-						class="mt-1 rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+						class="mt-1 rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
 					>
 						<option value="planning">Planning</option>
 						<option value="in_progress">In Progress</option>

@@ -1,6 +1,12 @@
 <script lang="ts">
 	import { Menu, X, LogOut, Settings } from 'lucide-svelte';
-	import { sidebarCollapsed, toggleSidebar, toggleMobileSidebar, openMobileSidebar } from '$lib/stores/sidebar';
+	import { onMount } from 'svelte';
+	import {
+		sidebarCollapsed,
+		toggleSidebar,
+		toggleMobileSidebar,
+		openMobileSidebar
+	} from '$lib/stores/sidebar';
 	import { isAuthenticated, user } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
 	import { authClient } from '$lib/api/auth';
@@ -9,7 +15,7 @@
 	let isMobile = false;
 
 	// Detect mobile on mount
-	$: if (typeof window !== 'undefined') {
+	onMount(() => {
 		const checkMobile = () => {
 			isMobile = window.innerWidth < 768;
 		};
@@ -18,7 +24,7 @@
 		window.addEventListener('resize', checkMobile);
 
 		return () => window.removeEventListener('resize', checkMobile);
-	}
+	});
 
 	async function handleLogout() {
 		try {
@@ -40,8 +46,8 @@
 	}
 </script>
 
-<nav class="fixed top-0 left-0 right-0 h-16 bg-white border-b border-slate-200 z-40">
-	<div class="flex items-center justify-between h-full px-4">
+<nav class="fixed top-0 right-0 left-0 z-40 h-16 border-b border-slate-200 bg-white">
+	<div class="flex h-full items-center justify-between px-4">
 		<!-- Left section: Hamburger + Logo -->
 		<div class="flex items-center gap-4">
 			<button
@@ -52,20 +58,22 @@
 						toggleSidebar();
 					}
 				}}
-				class="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+				class="rounded-lg p-2 transition-colors hover:bg-slate-100"
 				aria-label="Toggle navigation"
 			>
 				{#if isMobile && $sidebarCollapsed}
-					<Menu class="w-5 h-5 text-slate-700" />
+					<Menu class="h-5 w-5 text-slate-700" />
 				{:else if isMobile}
-					<X class="w-5 h-5 text-slate-700" />
+					<X class="h-5 w-5 text-slate-700" />
 				{:else}
-					<Menu class="w-5 h-5 text-slate-700" />
+					<Menu class="h-5 w-5 text-slate-700" />
 				{/if}
 			</button>
 
-			<div class="hidden md:flex items-center">
-				<span class="text-lg font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
+			<div class="hidden items-center md:flex">
+				<span
+					class="bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-lg font-bold text-transparent"
+				>
 					Woragis
 				</span>
 			</div>
@@ -73,58 +81,58 @@
 
 		<!-- Right section: User Profile + Settings -->
 		{#if $isAuthenticated}
-			<div class="flex items-center gap-2 relative">
+			<div class="relative flex items-center gap-2">
 				<!-- Settings Icon -->
 				<a
 					href="/settings/preferences"
-					class="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+					class="rounded-lg p-2 transition-colors hover:bg-slate-100"
 					aria-label="Settings"
 				>
-					<Settings class="w-5 h-5 text-slate-600" />
+					<Settings class="h-5 w-5 text-slate-600" />
 				</a>
 
 				<!-- Profile Menu -->
 				<button
 					on:click={() => (showProfileMenu = !showProfileMenu)}
-					class="flex items-center gap-2 px-3 py-2 hover:bg-slate-100 rounded-lg transition-colors"
+					class="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-slate-100"
 					aria-label="User menu"
 					aria-haspopup="true"
 					aria-expanded={showProfileMenu}
 				>
-					{#if $user?.profile?.avatar}
+					{#if $user?.profilePicture}
 						<img
-							src={$user.profile.avatar}
-							alt={$user.first_name}
-							class="w-8 h-8 rounded-full"
+							src={$user.profilePicture}
+							alt={$user.firstName ?? $user.username}
+							class="h-8 w-8 rounded-full"
 						/>
 					{:else}
-						<div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
+						<div class="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100">
 							<span class="text-xs font-semibold text-indigo-600">
-								{$user?.first_name?.charAt(0) ?? 'U'}
+								{$user?.firstName?.charAt(0) ?? $user?.username?.charAt(0) ?? 'U'}
 							</span>
 						</div>
 					{/if}
-					<span class="hidden sm:inline text-sm font-medium text-slate-700">
-						{$user?.first_name ?? 'User'}
+					<span class="hidden text-sm font-medium text-slate-700 sm:inline">
+						{$user?.firstName ?? $user?.username ?? 'User'}
 					</span>
 				</button>
 
 				<!-- Dropdown Menu -->
 				{#if showProfileMenu}
 					<div
-						class="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50"
+						class="absolute top-full right-0 z-50 mt-2 w-48 rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
 						role="menu"
 					>
 						<button
 							on:click={handleProfile}
-							class="w-full text-left px-4 py-2 hover:bg-slate-50 text-slate-700 text-sm transition-colors"
+							class="w-full px-4 py-2 text-left text-sm text-slate-700 transition-colors hover:bg-slate-50"
 							role="menuitem"
 						>
 							View Profile
 						</button>
 						<button
 							on:click={handleSettings}
-							class="w-full text-left px-4 py-2 hover:bg-slate-50 text-slate-700 text-sm transition-colors"
+							class="w-full px-4 py-2 text-left text-sm text-slate-700 transition-colors hover:bg-slate-50"
 							role="menuitem"
 						>
 							Settings
@@ -132,10 +140,10 @@
 						<hr class="my-1 border-slate-200" />
 						<button
 							on:click={handleLogout}
-							class="w-full text-left px-4 py-2 hover:bg-red-50 text-red-700 text-sm flex items-center gap-2 transition-colors"
+							class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-700 transition-colors hover:bg-red-50"
 							role="menuitem"
 						>
-							<LogOut class="w-4 h-4" />
+							<LogOut class="h-4 w-4" />
 							Logout
 						</button>
 					</div>

@@ -4,7 +4,7 @@
 	import { csrfTokenService } from '$lib/api/csrf';
 	import { isAuthenticated } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
-	import type { Chat, ChatMessage } from '$lib/api/types';
+	import type { Chat, ChatMessage, PaginatedApiResponse } from '$lib/api/types';
 	import { Trash2, Plus, Send } from 'lucide-svelte';
 
 	let loading = true;
@@ -32,7 +32,8 @@
 		error = null;
 
 		try {
-			chats = await chatsClient.listChats();
+			const response: PaginatedApiResponse<Chat> = await chatsClient.listChats();
+			chats = response.data;
 		} catch (err: any) {
 			error = err.message || 'Failed to load chats';
 			console.error('Error loading chats:', err);
@@ -93,22 +94,22 @@
 		}
 
 		sending = true;
-		const userMessage = {
-			role: 'user' as const,
+		const userMessage: ChatMessage = {
+			id: 'temp-' + Date.now(),
+			conversationId: selectedChat.id,
+			role: 'user',
 			content: messageInput,
 			timestamp: new Date().toISOString()
 		};
 
 		try {
 			await csrfTokenService.fetchCSRFToken();
-			const response = await chatsClient.sendMessage(selectedChat.id, {
-				content: messageInput
-			});
+			const response: ChatMessage = await chatsClient.sendMessage(selectedChat.id, messageInput);
 
 			messages = [...messages, userMessage];
 
-			if (response.message) {
-				messages = [...messages, response.message];
+			if (response && response.id) {
+				messages = [...messages, response];
 			}
 
 			messageInput = '';
@@ -119,7 +120,7 @@
 				if (messagesContainer) {
 					messagesContainer.scrollTop = messagesContainer.scrollHeight;
 				}
-			}, 0);
+			}, 100);
 		} catch (err: any) {
 			error = err.message || 'Failed to send message';
 			console.error('Error sending message:', err);
@@ -147,7 +148,7 @@
 	}
 </script>
 
-<div class="container mx-auto px-4 py-8 h-screen flex flex-col">
+<div class="container mx-auto flex h-screen flex-col px-4 py-8">
 	<div class="mb-6">
 		<div class="flex items-center justify-between">
 			<div>
@@ -156,7 +157,7 @@
 			</div>
 			<button
 				on:click={toggleForm}
-				class="flex items-center gap-2 rounded-lg bg-blue-600 text-white px-4 py-2 font-medium hover:bg-blue-700 transition-colors"
+				class="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700"
 			>
 				<Plus size={20} />
 				New Chat
@@ -168,28 +169,35 @@
 		<div class="mb-6 rounded-lg bg-red-50 p-4 text-red-800">{error}</div>
 	{/if}
 
-	<div class="flex-1 flex gap-6 min-h-0">
+	<div class="flex min-h-0 flex-1 gap-6">
 		<!-- Chats Sidebar -->
-		<div class="w-64 border-r border-gray-200 overflow-y-auto">
+		<div class="w-64 overflow-y-auto border-r border-gray-200">
 			{#if loading}
-				<div class="text-center py-8">
-					<div class="inline-block h-6 w-6 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+				<div class="py-8 text-center">
+					<div
+						class="inline-block h-6 w-6 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"
+					></div>
 				</div>
 			{:else if chats.length === 0}
-				<div class="p-4 text-center text-gray-600 text-sm">
-					No chats yet
-				</div>
+				<div class="p-4 text-center text-sm text-gray-600">No chats yet</div>
 			{:else}
 				<div class="space-y-2 p-4">
 					{#each chats as chat (chat.id)}
 						<div
+							role="button"
+							tabindex="0"
 							on:click={() => selectChat(chat)}
-							class="group cursor-pointer rounded-lg {selectedChat?.id === chat.id ? 'bg-blue-100' : 'hover:bg-gray-100'} p-3 transition-colors"
+							on:keydown={(e) => {
+								if (e.key === 'Enter' || e.key === ' ') selectChat(chat);
+							}}
+							class="group cursor-pointer rounded-lg {selectedChat?.id === chat.id
+								? 'bg-blue-100'
+								: 'hover:bg-gray-100'} p-3 transition-colors"
 						>
 							<div class="flex items-center justify-between gap-2">
-								<div class="flex-1 min-w-0">
-									<p class="text-sm font-medium text-gray-900 truncate">{chat.title}</p>
-									<p class="text-xs text-gray-500 truncate">
+								<div class="min-w-0 flex-1">
+									<p class="truncate text-sm font-medium text-gray-900">{chat.title}</p>
+									<p class="truncate text-xs text-gray-500">
 										{new Date(chat.createdAt).toLocaleDateString()}
 									</p>
 								</div>
@@ -198,7 +206,7 @@
 										e.stopPropagation();
 										deleteChat(chat.id);
 									}}
-									class="opacity-0 group-hover:opacity-100 transition-opacity text-red-600 hover:bg-red-50 rounded p-1"
+									class="rounded p-1 text-red-600 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-50"
 									title="Delete chat"
 								>
 									<Trash2 size={14} />
@@ -210,24 +218,24 @@
 			{/if}
 
 			{#if showForm}
-				<div class="p-4 border-t border-gray-200 space-y-2">
+				<div class="space-y-2 border-t border-gray-200 p-4">
 					<input
 						type="text"
 						bind:value={newChatTitle}
 						placeholder="Chat title..."
-						class="w-full rounded-lg border border-gray-300 px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+						class="w-full rounded-lg border border-gray-300 px-2 py-2 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none"
 					/>
 					<div class="flex gap-2">
 						<button
 							on:click={createChat}
 							disabled={creating}
-							class="flex-1 rounded-lg bg-blue-600 text-white px-2 py-2 text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+							class="flex-1 rounded-lg bg-blue-600 px-2 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
 						>
 							Create
 						</button>
 						<button
 							on:click={toggleForm}
-							class="flex-1 rounded-lg border border-gray-300 bg-white text-gray-900 px-2 py-2 text-sm font-medium hover:bg-gray-50"
+							class="flex-1 rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50"
 						>
 							Cancel
 						</button>
@@ -237,29 +245,36 @@
 		</div>
 
 		<!-- Chat Area -->
-		<div class="flex-1 flex flex-col min-w-0">
+		<div class="flex min-w-0 flex-1 flex-col">
 			{#if !selectedChat}
-				<div class="flex-1 flex flex-col items-center justify-center text-gray-600">
-					<p class="text-lg mb-2">No chat selected</p>
+				<div class="flex flex-1 flex-col items-center justify-center text-gray-600">
+					<p class="mb-2 text-lg">No chat selected</p>
 					<p class="text-sm">Create a new chat or select one from the list</p>
 				</div>
 			{:else}
 				<!-- Messages -->
-				<div id="messages-container" class="flex-1 overflow-y-auto border border-gray-200 rounded-lg bg-gray-50 p-4 mb-4 space-y-4">
+				<div
+					id="messages-container"
+					class="mb-4 flex-1 space-y-4 overflow-y-auto rounded-lg border border-gray-200 bg-gray-50 p-4"
+				>
 					{#if messages.length === 0}
-						<div class="flex items-center justify-center h-full text-gray-600">
+						<div class="flex h-full items-center justify-center text-gray-600">
 							<p>Start a conversation...</p>
 						</div>
 					{:else}
 						{#each messages as message (message.id || message.timestamp)}
-							<div
-								class="flex {message.role === 'user' ? 'justify-end' : 'justify-start'}"
-							>
+							<div class="flex {message.role === 'user' ? 'justify-end' : 'justify-start'}">
 								<div
-									class="max-w-xs {message.role === 'user' ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200 text-gray-900'} rounded-lg px-3 py-2"
+									class="max-w-xs {message.role === 'user'
+										? 'bg-blue-600 text-white'
+										: 'border border-gray-200 bg-white text-gray-900'} rounded-lg px-3 py-2"
 								>
 									<p class="text-sm">{message.content}</p>
-									<p class="text-xs {message.role === 'user' ? 'text-blue-100' : 'text-gray-500'} mt-1">
+									<p
+										class="text-xs {message.role === 'user'
+											? 'text-blue-100'
+											: 'text-gray-500'} mt-1"
+									>
 										{new Date(message.timestamp).toLocaleTimeString()}
 									</p>
 								</div>
@@ -275,13 +290,13 @@
 						bind:value={messageInput}
 						on:keydown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
 						placeholder="Type a message..."
-						class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+						class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:outline-none"
 						disabled={sending}
 					/>
 					<button
 						on:click={sendMessage}
 						disabled={sending || !messageInput.trim()}
-						class="rounded-lg bg-blue-600 text-white px-4 py-2 hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+						class="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
 					>
 						<Send size={18} />
 					</button>

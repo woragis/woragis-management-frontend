@@ -97,7 +97,7 @@
 		<h1 class="text-3xl font-bold text-gray-900">Projects</h1>
 		<button
 			onclick={toggleForm}
-			class="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 transition-colors"
+			class="rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
 		>
 			{showForm ? 'Cancel' : '+ New Project'}
 		</button>
@@ -112,7 +112,7 @@
 			<h2 class="mb-4 text-xl font-semibold text-gray-900">Create New Project</h2>
 			<form class="space-y-4" onsubmit={handleCreateProject}>
 				<div>
-					<label for="name" class="block text-sm font-medium text-gray-700 mb-1">
+					<label for="name" class="mb-1 block text-sm font-medium text-gray-700">
 						Project Name
 					</label>
 					<input
@@ -122,12 +122,12 @@
 						bind:value={newProject.name}
 						required
 						disabled={creating}
-						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
 					/>
 				</div>
 
 				<div>
-					<label for="description" class="block text-sm font-medium text-gray-700 mb-1">
+					<label for="description" class="mb-1 block text-sm font-medium text-gray-700">
 						Description
 					</label>
 					<textarea
@@ -135,19 +135,17 @@
 						placeholder="Project description"
 						bind:value={newProject.description}
 						disabled={creating}
-						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
 					></textarea>
 				</div>
 
 				<div>
-					<label for="status" class="block text-sm font-medium text-gray-700 mb-1">
-						Status
-					</label>
+					<label for="status" class="mb-1 block text-sm font-medium text-gray-700"> Status </label>
 					<select
 						id="status"
 						bind:value={newProject.status}
 						disabled={creating}
-						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
 					>
 						<option value="planning">Planning</option>
 						<option value="in_progress">In Progress</option>
@@ -160,7 +158,7 @@
 				<button
 					type="submit"
 					disabled={creating}
-					class="w-full rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+					class="w-full rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
 				>
 					{#if creating}
 						Creating...
@@ -173,8 +171,10 @@
 	{/if}
 
 	{#if loading}
-		<div class="text-center py-12">
-			<div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+		<div class="py-12 text-center">
+			<div
+				class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"
+			></div>
 			<p class="mt-4 text-gray-600">Loading projects...</p>
 		</div>
 	{:else if projects.length === 0}
@@ -184,7 +184,9 @@
 	{:else}
 		<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 			{#each projects as project (project.id)}
-				<div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
+				<div
+					class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
+				>
 					<div class="mb-3 flex items-start justify-between">
 						<h3 class="text-lg font-semibold text-gray-900">{project.name}</h3>
 						<span class="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
@@ -192,18 +194,18 @@
 						</span>
 					</div>
 					{#if project.description}
-						<p class="mb-4 text-sm text-gray-600 line-clamp-2">{project.description}</p>
+						<p class="mb-4 line-clamp-2 text-sm text-gray-600">{project.description}</p>
 					{/if}
 					<div class="flex gap-2">
 						<button
 							onclick={() => navigateToDetail(project.id)}
-							class="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+							class="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50"
 						>
 							View
 						</button>
 						<button
 							onclick={() => handleDeleteProject(project.id)}
-							class="rounded-md border border-red-300 px-3 py-2 text-sm text-red-700 hover:bg-red-50 transition-colors"
+							class="rounded-md border border-red-300 px-3 py-2 text-sm text-red-700 transition-colors hover:bg-red-50"
 						>
 							Delete
 						</button>

@@ -46,15 +46,17 @@ class DashboardApiClient {
 	async getDashboardStats(): Promise<DashboardStats> {
 		try {
 			const response = await this.client.get<ApiResponse<DashboardStats>>('/dashboard');
-			return response.data.data || {
-				totalProjects: 0,
-				activeProjects: 0,
-				completedProjects: 0,
-				totalIdeas: 0,
-				totalClients: 0,
-				recentTransactions: [],
-				upcomingTasks: []
-			};
+			return (
+				response.data.data || {
+					totalProjects: 0,
+					activeProjects: 0,
+					completedProjects: 0,
+					totalIdeas: 0,
+					totalClients: 0,
+					recentTransactions: [],
+					upcomingTasks: []
+				}
+			);
 		} catch (error) {
 			console.error('Failed to fetch dashboard stats:', error);
 			throw error;

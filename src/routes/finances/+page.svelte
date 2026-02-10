@@ -4,18 +4,22 @@
 	import { csrfTokenService } from '$lib/api/csrf';
 	import { isAuthenticated } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
-	import type { Transaction } from '$lib/api/finances/types';
+	import type { Transaction, PaginatedApiResponse } from '$lib/api/types';
 	import { Trash2, Plus } from 'lucide-svelte';
 
 	let loading = true;
 	let error: string | null = null;
 	let transactions: Transaction[] = [];
-	let newTransaction = {
+	let newTransaction: Transaction = {
+		id: '',
+		userId: '',
 		description: '',
 		amount: 0,
-		type: 'expense' as const,
+		type: 'expense',
 		category: 'general',
-		date: new Date().toISOString().split('T')[0]
+		date: new Date().toISOString().split('T')[0],
+		createdAt: '',
+		updatedAt: ''
 	};
 	let showForm = false;
 	let creating = false;
@@ -34,7 +38,10 @@
 		error = null;
 
 		try {
-			const response = await financesClient.listTransactions(1, 100);
+			const response: PaginatedApiResponse<Transaction> = await financesClient.listTransactions(
+				1,
+				100
+			);
 			transactions = response.data || [];
 		} catch (err: any) {
 			error = err.message || 'Failed to load transactions';
@@ -69,11 +76,15 @@
 			const created = await financesClient.createTransaction(newTransaction);
 			transactions = [created, ...transactions];
 			newTransaction = {
+				id: '',
+				userId: '',
 				description: '',
 				amount: 0,
 				type: 'expense',
 				category: 'general',
-				date: new Date().toISOString().split('T')[0]
+				date: new Date().toISOString().split('T')[0],
+				createdAt: '',
+				updatedAt: ''
 			};
 			showForm = false;
 		} catch (err: any) {
@@ -108,7 +119,7 @@
 			</div>
 			<button
 				on:click={toggleForm}
-				class="flex items-center gap-2 rounded-lg bg-blue-600 text-white px-4 py-2 font-medium hover:bg-blue-700 transition-colors"
+				class="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700"
 			>
 				<Plus size={20} />
 				New Transaction
@@ -125,10 +136,10 @@
 			<h2 class="mb-4 text-lg font-semibold text-gray-900">New Transaction</h2>
 			<form
 				on:submit|preventDefault={createTransaction}
-				class="grid gap-4 grid-cols-1 md:grid-cols-2"
+				class="grid grid-cols-1 gap-4 md:grid-cols-2"
 			>
 				<div>
-					<label for="description" class="block text-sm font-medium text-gray-700 mb-1">
+					<label for="description" class="mb-1 block text-sm font-medium text-gray-700">
 						Description
 					</label>
 					<input
@@ -136,28 +147,28 @@
 						type="text"
 						bind:value={newTransaction.description}
 						placeholder="e.g., Office supplies"
-						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:outline-none"
 					/>
 				</div>
 
 				<div>
-					<label for="amount" class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+					<label for="amount" class="mb-1 block text-sm font-medium text-gray-700">Amount</label>
 					<input
 						id="amount"
 						type="number"
 						bind:value={newTransaction.amount}
 						step="0.01"
 						placeholder="0.00"
-						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:outline-none"
 					/>
 				</div>
 
 				<div>
-					<label for="type" class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+					<label for="type" class="mb-1 block text-sm font-medium text-gray-700">Type</label>
 					<select
 						id="type"
 						bind:value={newTransaction.type}
-						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:outline-none"
 					>
 						<option value="income">Income</option>
 						<option value="expense">Expense</option>
@@ -165,7 +176,7 @@
 				</div>
 
 				<div>
-					<label for="category" class="block text-sm font-medium text-gray-700 mb-1">
+					<label for="category" class="mb-1 block text-sm font-medium text-gray-700">
 						Category
 					</label>
 					<input
@@ -173,32 +184,32 @@
 						type="text"
 						bind:value={newTransaction.category}
 						placeholder="e.g., general"
-						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:outline-none"
 					/>
 				</div>
 
 				<div>
-					<label for="date" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+					<label for="date" class="mb-1 block text-sm font-medium text-gray-700">Date</label>
 					<input
 						id="date"
 						type="date"
 						bind:value={newTransaction.date}
-						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:outline-none"
 					/>
 				</div>
 
-				<div class="md:col-span-2 flex gap-2">
+				<div class="flex gap-2 md:col-span-2">
 					<button
 						type="submit"
 						disabled={creating}
-						class="flex-1 rounded-lg bg-blue-600 text-white px-4 py-2 font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+						class="flex-1 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
 					>
 						{creating ? 'Creating...' : 'Create Transaction'}
 					</button>
 					<button
 						type="button"
 						on:click={toggleForm}
-						class="flex-1 rounded-lg border border-gray-300 bg-white text-gray-900 px-4 py-2 font-medium hover:bg-gray-50 transition-colors"
+						class="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2 font-medium text-gray-900 transition-colors hover:bg-gray-50"
 					>
 						Cancel
 					</button>
@@ -208,13 +219,17 @@
 	{/if}
 
 	{#if loading}
-		<div class="text-center py-12">
-			<div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+		<div class="py-12 text-center">
+			<div
+				class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"
+			></div>
 			<p class="mt-4 text-gray-600">Loading transactions...</p>
 		</div>
 	{:else if transactions.length === 0}
 		<div class="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-12 text-center">
-			<p class="text-gray-600">No transactions yet. Create your first transaction to get started.</p>
+			<p class="text-gray-600">
+				No transactions yet. Create your first transaction to get started.
+			</p>
 		</div>
 	{:else}
 		<div class="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm">
@@ -258,7 +273,7 @@
 							<td class="px-6 py-3 text-center">
 								<button
 									on:click={() => deleteTransaction(transaction.id)}
-									class="inline-flex items-center gap-2 rounded px-2 py-1 text-red-600 hover:bg-red-50 transition-colors"
+									class="inline-flex items-center gap-2 rounded px-2 py-1 text-red-600 transition-colors hover:bg-red-50"
 									title="Delete transaction"
 								>
 									<Trash2 size={16} />

@@ -1,6 +1,7 @@
 # Sidebar UI/UX Design Specification
 
 ## Overview
+
 A collapsible sidebar navigation with organized domain groups, icons, active states, and responsive behavior for the management portal.
 
 ---
@@ -8,6 +9,7 @@ A collapsible sidebar navigation with organized domain groups, icons, active sta
 ## Layout Structure
 
 ### Desktop View (1024px+)
+
 ```
 ┌─────────────────────────────────────────────────────┐
 │  Logo                        [hamburger]   Profile   │  ← Top Nav (50px)
@@ -22,11 +24,13 @@ A collapsible sidebar navigation with organized domain groups, icons, active sta
 ```
 
 ### Tablet View (768px-1023px)
+
 ```
 Same as desktop, but sidebar collapses to icons-only (70px) at smaller sizes
 ```
 
 ### Mobile View (<768px)
+
 ```
 ┌──────────────────────────────────┐
 │  Logo    [hamburger]   Profile   │  ← Top Nav (50px)
@@ -41,12 +45,14 @@ Same as desktop, but sidebar collapses to icons-only (70px) at smaller sizes
 ## Sidebar Specifications
 
 ### Dimensions
+
 - **Desktop**: 250px wide (expanded), 70px wide (collapsed)
 - **Tablet/Mobile**: 250px wide (overlay when open), fully hidden when closed
 - **Height**: Full viewport height minus top nav (calc(100vh - 50px))
 - **Z-index**: 1000 (above main content on mobile)
 
 ### Color Scheme
+
 ```
 Background:      #f8fafc (light gray-blue, Tailwind: slate-50)
 Border:          #e2e8f0 (Tailwind: slate-200)
@@ -95,7 +101,7 @@ Border Right:    #cbd5e1 (Tailwind: slate-300)
 ├─────────────────────────────────┤
 │ FOOTER AREA (60px)              │
 │                                 │
-│ [user-icon] Settings [gear]     │  
+│ [user-icon] Settings [gear]     │
 │ [logout-icon] Logout            │
 │                                 │
 └─────────────────────────────────┘
@@ -106,6 +112,7 @@ Border Right:    #cbd5e1 (Tailwind: slate-300)
 ## Component Layout Details
 
 ### Header Section (60px)
+
 ```
 Expanded View:
 ┌────────────────────────────────┐
@@ -119,6 +126,7 @@ Collapsed View:
 ```
 
 **Behavior:**
+
 - `[<]` button: Collapse sidebar (desktop only)
 - `[X]` button: Close sidebar (mobile only)
 - On mobile, clicking overlay area also closes
@@ -128,6 +136,7 @@ Collapsed View:
 ### Navigation Items
 
 #### Primary Link (Not in a group)
+
 ```
 ┌─────────────────────────────────┐
 │ [icon] Dashboard                │ ← Expanded
@@ -139,7 +148,8 @@ Collapsed View:
 ```
 
 **States:**
-1. **Inactive**: 
+
+1. **Inactive**:
    - BG: transparent
    - Icon: slate-500
    - Text: slate-700
@@ -158,6 +168,7 @@ Collapsed View:
    - Border-left: 3px indigo-600
 
 **Padding:**
+
 - Expanded: `px-4 py-3`
 - Collapsed: Center icon, `py-3`
 
@@ -182,6 +193,7 @@ Collapsed:
 ```
 
 **Group Header Style:**
+
 - Font: 11px uppercase, font-weight 600
 - Color: slate-600
 - Padding: `px-4 py-2 mt-2`
@@ -189,6 +201,7 @@ Collapsed:
 - Cursor: pointer on hover
 
 **Behavior:**
+
 - Click to toggle expansion
 - Chevron rotates 90° on toggle
 - Smooth animation (0.2s)
@@ -207,6 +220,7 @@ Collapsed:
 ```
 
 **Style:**
+
 - Padding: `pl-8 pr-4 py-2.5`
 - Font: 14px, normal weight
 - Color: slate-700
@@ -214,6 +228,7 @@ Collapsed:
 - Indent: Arrow/chevron indicates nesting
 
 **States:**
+
 1. **Inactive**: Same as primary but lighter
 2. **Hover**: slate-100 BG
 3. **Active**: indigo-100 BG with left border
@@ -234,6 +249,7 @@ Collapsed:
 ```
 
 **Third-level Style:**
+
 - Padding: `pl-12 pr-4 py-2`
 - Font: 13px, slightly lighter
 - Symbol: `-` instead of `>`
@@ -253,6 +269,7 @@ Collapsed:
 ```
 
 **Style:**
+
 - Separator line above (border-top)
 - Same hover/active states as primary links
 - Always visible (doesn't scroll with nav)
@@ -263,6 +280,7 @@ Collapsed:
 ## Icon Set
 
 ### Icons to Use (from Lucide/Heroicons)
+
 ```
 Dashboard        → LayoutDashboard (2 grid squares)
 Projects         → FolderOpen / Grid3x3
@@ -291,6 +309,7 @@ Chevron Down     → ChevronDown
 ```
 
 **Icon Sizing:**
+
 - Primary items: `w-5 h-5` (20px)
 - Sidebar header: `w-6 h-6` (24px)
 - Group headers: `w-4 h-4` (16px)
@@ -300,96 +319,103 @@ Chevron Down     → ChevronDown
 ## Animations & Transitions
 
 ### Sidebar Toggle (Desktop)
+
 ```css
 /* Sidebar Width */
 .sidebar {
-  transition: width 0.3s ease-in-out;
-  width: 250px;
+	transition: width 0.3s ease-in-out;
+	width: 250px;
 }
 
 .sidebar.collapsed {
-  width: 70px;
+	width: 70px;
 }
 
 /* Labels Fade Out */
 .sidebar-label {
-  transition: opacity 0.2s ease-in-out 0.1s;
-  opacity: 1;
+	transition: opacity 0.2s ease-in-out 0.1s;
+	opacity: 1;
 }
 
 .sidebar.collapsed .sidebar-label {
-  opacity: 0;
-  transition-delay: 0s;
+	opacity: 0;
+	transition-delay: 0s;
 }
 
 /* Icons Adjust */
 .sidebar-icon {
-  transition: margin-left 0.3s ease-in-out;
-  margin-left: 0;
+	transition: margin-left 0.3s ease-in-out;
+	margin-left: 0;
 }
 
 .sidebar.collapsed .sidebar-icon {
-  margin-left: calc((70px - 20px) / 2 - 10px);
+	margin-left: calc((70px - 20px) / 2 - 10px);
 }
 ```
 
 ### Hover Effects
+
 ```css
 .nav-item {
-  transition: background-color 0.15s ease, 
-              color 0.15s ease;
+	transition:
+		background-color 0.15s ease,
+		color 0.15s ease;
 }
 
 .nav-item:hover {
-  background-color: #f1f5f9;
-  color: #0f172a;
+	background-color: #f1f5f9;
+	color: #0f172a;
 }
 ```
 
 ### Group Toggle (Expand/Collapse)
+
 ```css
 .group-header {
-  transition: background-color 0.15s ease;
+	transition: background-color 0.15s ease;
 }
 
 .group-header .chevron {
-  transition: transform 0.2s ease;
+	transition: transform 0.2s ease;
 }
 
 .group-header.collapsed .chevron {
-  transform: rotate(-90deg);
+	transform: rotate(-90deg);
 }
 
 .group-items {
-  max-height: 500px;
-  transition: max-height 0.3s ease, opacity 0.2s ease;
-  opacity: 1;
+	max-height: 500px;
+	transition:
+		max-height 0.3s ease,
+		opacity 0.2s ease;
+	opacity: 1;
 }
 
 .group-items.collapsed {
-  max-height: 0;
-  opacity: 0;
+	max-height: 0;
+	opacity: 0;
 }
 ```
 
 ### Mobile Overlay Animation
+
 ```css
 .sidebar-overlay {
-  background-color: rgba(0, 0, 0, 0);
-  transition: background-color 0.3s ease;
+	background-color: rgba(0, 0, 0, 0);
+	transition: background-color 0.3s ease;
 }
 
 .sidebar-overlay.open {
-  background-color: rgba(0, 0, 0, 0.5);
+	background-color: rgba(0, 0, 0, 0.5);
 }
 
 .sidebar {
-  transform: translateX(-100%);
-  transition: transform 0.3s ease;
+	transform: translateX(-100%);
+	transition: transform 0.3s ease;
 }
 
 .sidebar.open {
-  transform: translateX(0);
+	transform: translateX(0);
 }
 ```
 
@@ -398,6 +424,7 @@ Chevron Down     → ChevronDown
 ## Responsive Behavior
 
 ### Desktop (1024px+)
+
 ```
 ✓ Sidebar always visible
 ✓ Can toggle collapsed state
@@ -407,6 +434,7 @@ Chevron Down     → ChevronDown
 ```
 
 ### Tablet (768px - 1023px)
+
 ```
 ✓ Sidebar visible by default (collapsed to 70px)
 ✓ Click icon to expand/collapse
@@ -416,6 +444,7 @@ Chevron Down     → ChevronDown
 ```
 
 ### Mobile (<768px)
+
 ```
 ✗ Sidebar hidden by default
 ✓ Hamburger button opens sidebar as overlay
@@ -431,6 +460,7 @@ Chevron Down     → ChevronDown
 ## States & Behaviors
 
 ### Active Route Highlighting
+
 ```typescript
 // Pseudo-code
 if (currentRoute === item.route) {
@@ -443,6 +473,7 @@ if (currentRoute === item.route) {
 ```
 
 ### Parent Active When Child Active
+
 ```typescript
 // If /finance/reports is current and sidebar has:
 // Finances
@@ -452,6 +483,7 @@ if (currentRoute === item.route) {
 ```
 
 ### Collapsible Groups Behavior
+
 ```
 Default State:
 ✓ Primary items: Always visible
@@ -466,6 +498,7 @@ Remembers in localStorage:
 ```
 
 ### Tooltip on Collapsed Icons (Desktop)
+
 ```
 When sidebar is collapsed, hovering icon shows tooltip:
 
@@ -491,6 +524,7 @@ Shows after 300ms delay, hides immediately on mouseleave
 ## Color Variants by Theme
 
 ### Light Theme (Default)
+
 ```
 Background:      #f8fafc
 Text Primary:    #1e293b
@@ -502,6 +536,7 @@ Border:          #e2e8f0
 ```
 
 ### Dark Theme (Future)
+
 ```
 Background:      #1e293b
 Text Primary:    #f1f5f9
@@ -517,6 +552,7 @@ Border:          #334155
 ## Accessibility
 
 ### Keyboard Navigation
+
 ```
 Tab → Navigate through sidebar items
 Enter/Space → Click active item
@@ -526,6 +562,7 @@ ESC → Close sidebar on mobile
 ```
 
 ### ARIA Labels
+
 ```html
 <nav aria-label="Main navigation">
   <button aria-label="Toggle navigation">
@@ -539,14 +576,16 @@ ESC → Close sidebar on mobile
 ```
 
 ### Focus States
+
 ```css
 .nav-item:focus {
-  outline: 2px solid #4f46e5;
-  outline-offset: -2px;
+	outline: 2px solid #4f46e5;
+	outline-offset: -2px;
 }
 ```
 
 ### Screen Reader Text
+
 ```html
 <!-- For collapsed state icon-only items -->
 <span class="sr-only">Dashboard</span>
@@ -586,6 +625,7 @@ interface NavigationItem {
 ## Mobile Menu Behavior
 
 ### Opening
+
 ```
 1. User clicks hamburger
 2. Overlay fades in (0.3s)
@@ -595,6 +635,7 @@ interface NavigationItem {
 ```
 
 ### Closing
+
 ```
 1. User clicks X, clicks overlay, or presses ESC
 2. Sidebar slides out left (0.3s)

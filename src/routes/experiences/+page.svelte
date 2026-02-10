@@ -4,7 +4,7 @@
 	import { csrfTokenService } from '$lib/api/csrf';
 	import { isAuthenticated } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
-	import type { Experience } from '$lib/api/types';
+	import type { Experience, PaginatedApiResponse } from '$lib/api/types';
 	import { Trash2, Plus } from 'lucide-svelte';
 
 	let loading = true;
@@ -36,7 +36,8 @@
 		error = null;
 
 		try {
-			experiences = await experiencesClient.listExperiences();
+			const response: PaginatedApiResponse<Experience> = await experiencesClient.listExperiences();
+			experiences = response.data;
 		} catch (err: any) {
 			error = err.message || 'Failed to load experiences';
 			console.error('Error loading experiences:', err);
@@ -122,7 +123,7 @@
 			</div>
 			<button
 				on:click={toggleForm}
-				class="flex items-center gap-2 rounded-lg bg-blue-600 text-white px-4 py-2 font-medium hover:bg-blue-700 transition-colors"
+				class="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700"
 			>
 				<Plus size={20} />
 				New Experience
@@ -139,10 +140,10 @@
 			<h2 class="mb-4 text-lg font-semibold text-gray-900">New Experience</h2>
 			<form
 				on:submit|preventDefault={createExperience}
-				class="grid gap-4 grid-cols-1 md:grid-cols-2"
+				class="grid grid-cols-1 gap-4 md:grid-cols-2"
 			>
 				<div>
-					<label for="title" class="block text-sm font-medium text-gray-700 mb-1">
+					<label for="title" class="mb-1 block text-sm font-medium text-gray-700">
 						Job Title *
 					</label>
 					<input
@@ -150,12 +151,12 @@
 						type="text"
 						bind:value={newExperience.title}
 						placeholder="e.g., Senior Developer"
-						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:outline-none"
 					/>
 				</div>
 
 				<div>
-					<label for="company" class="block text-sm font-medium text-gray-700 mb-1">
+					<label for="company" class="mb-1 block text-sm font-medium text-gray-700">
 						Company *
 					</label>
 					<input
@@ -163,36 +164,36 @@
 						type="text"
 						bind:value={newExperience.company}
 						placeholder="e.g., Tech Corp"
-						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:outline-none"
 					/>
 				</div>
 
 				<div>
-					<label for="startDate" class="block text-sm font-medium text-gray-700 mb-1">
+					<label for="startDate" class="mb-1 block text-sm font-medium text-gray-700">
 						Start Date *
 					</label>
 					<input
 						id="startDate"
 						type="date"
 						bind:value={newExperience.startDate}
-						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:outline-none"
 					/>
 				</div>
 
 				<div>
-					<label for="endDate" class="block text-sm font-medium text-gray-700 mb-1">
+					<label for="endDate" class="mb-1 block text-sm font-medium text-gray-700">
 						End Date
 					</label>
 					<input
 						id="endDate"
 						type="date"
 						bind:value={newExperience.endDate}
-						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:outline-none"
 					/>
 				</div>
 
 				<div class="md:col-span-2">
-					<label for="description" class="block text-sm font-medium text-gray-700 mb-1">
+					<label for="description" class="mb-1 block text-sm font-medium text-gray-700">
 						Description
 					</label>
 					<textarea
@@ -200,31 +201,33 @@
 						bind:value={newExperience.description}
 						placeholder="Describe your responsibilities and achievements"
 						rows="3"
-						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:outline-none"
 					></textarea>
 				</div>
 
 				<div class="md:col-span-2">
-					<label class="block text-sm font-medium text-gray-700 mb-2">Skills</label>
-					<div class="flex gap-2 mb-2">
+					<label for="skills-input" class="mb-2 block text-sm font-medium text-gray-700"
+						>Skills</label
+					>
+					<div class="mb-2 flex gap-2" id="skills-input">
 						<input
 							type="text"
 							bind:value={skillInput}
 							placeholder="Add a skill"
 							on:keydown={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
-							class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+							class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:outline-none"
 						/>
 						<button
 							type="button"
 							on:click={addSkill}
-							class="rounded-lg bg-gray-200 text-gray-900 px-3 py-2 font-medium hover:bg-gray-300 transition-colors"
+							class="rounded-lg bg-gray-200 px-3 py-2 font-medium text-gray-900 transition-colors hover:bg-gray-300"
 						>
 							Add
 						</button>
 					</div>
 					<div class="flex flex-wrap gap-2">
 						{#each newExperience.skills as skill (skill)}
-							<div class="flex items-center gap-2 rounded-full bg-blue-100 text-blue-800 px-3 py-1">
+							<div class="flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-blue-800">
 								<span class="text-sm">{skill}</span>
 								<button
 									type="button"
@@ -238,18 +241,18 @@
 					</div>
 				</div>
 
-				<div class="md:col-span-2 flex gap-2">
+				<div class="flex gap-2 md:col-span-2">
 					<button
 						type="submit"
 						disabled={creating}
-						class="flex-1 rounded-lg bg-blue-600 text-white px-4 py-2 font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+						class="flex-1 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
 					>
 						{creating ? 'Creating...' : 'Create Experience'}
 					</button>
 					<button
 						type="button"
 						on:click={toggleForm}
-						class="flex-1 rounded-lg border border-gray-300 bg-white text-gray-900 px-4 py-2 font-medium hover:bg-gray-50 transition-colors"
+						class="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2 font-medium text-gray-900 transition-colors hover:bg-gray-50"
 					>
 						Cancel
 					</button>
@@ -259,26 +262,32 @@
 	{/if}
 
 	{#if loading}
-		<div class="text-center py-12">
-			<div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+		<div class="py-12 text-center">
+			<div
+				class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"
+			></div>
 			<p class="mt-4 text-gray-600">Loading experiences...</p>
 		</div>
 	{:else if experiences.length === 0}
 		<div class="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-12 text-center">
-			<p class="text-gray-600">No experiences yet. Add your first work experience to get started.</p>
+			<p class="text-gray-600">
+				No experiences yet. Add your first work experience to get started.
+			</p>
 		</div>
 	{:else}
 		<div class="space-y-4">
 			{#each experiences as experience (experience.id)}
-				<div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
-					<div class="flex items-start justify-between mb-2">
+				<div
+					class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+				>
+					<div class="mb-2 flex items-start justify-between">
 						<div class="flex-1">
 							<h3 class="text-lg font-semibold text-gray-900">{experience.title}</h3>
 							<p class="text-gray-600">{experience.company}</p>
 						</div>
 						<button
 							on:click={() => deleteExperience(experience.id)}
-							class="inline-flex items-center gap-2 rounded px-2 py-1 text-red-600 hover:bg-red-50 transition-colors"
+							class="inline-flex items-center gap-2 rounded px-2 py-1 text-red-600 transition-colors hover:bg-red-50"
 							title="Delete experience"
 						>
 							<Trash2 size={16} />
@@ -289,7 +298,7 @@
 						<p class="mb-3 text-gray-700">{experience.description}</p>
 					{/if}
 
-					<div class="flex items-center gap-4 mb-3 text-sm text-gray-600">
+					<div class="mb-3 flex items-center gap-4 text-sm text-gray-600">
 						<span>
 							{new Date(experience.startDate).toLocaleDateString()} -
 							{experience.endDate ? new Date(experience.endDate).toLocaleDateString() : 'Present'}
@@ -299,7 +308,9 @@
 					{#if experience.skills && experience.skills.length > 0}
 						<div class="flex flex-wrap gap-2">
 							{#each experience.skills as skill}
-								<span class="inline-block rounded-full bg-gray-100 text-gray-700 px-3 py-1 text-xs font-medium">
+								<span
+									class="inline-block rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700"
+								>
 									{skill}
 								</span>
 							{/each}
