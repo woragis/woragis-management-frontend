@@ -72,8 +72,12 @@
 	}
 
 	async function createExperience() {
-
-		if (!newExperience.title || !newExperience.position || !newExperience.company || !newExperience.startDate) {
+		if (
+			!newExperience.title ||
+			!newExperience.position ||
+			!newExperience.company ||
+			!newExperience.startDate
+		) {
 			error = 'Please fill in all required fields (title, position, company, start date)';
 			return;
 		}
@@ -90,7 +94,7 @@
 				description: newExperience.description,
 				periodStart: newExperience.startDate,
 				periodEnd: newExperience.endDate,
-				technologies: newExperience.skills,
+				technologies: newExperience.skills
 				// Optionally add more fields if needed
 			};
 			const created = await experiencesClient.createExperience(payload);
@@ -185,9 +189,7 @@
 				</div>
 
 				<div>
-					<label for="type" class="mb-1 block text-sm font-medium text-gray-700">
-						Type *
-					</label>
+					<label for="type" class="mb-1 block text-sm font-medium text-gray-700"> Type * </label>
 					<select
 						id="type"
 						bind:value={newExperience.type}

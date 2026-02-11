@@ -79,7 +79,16 @@
 				churnRate: Number(newProject.churnRate)
 			};
 			await projectsClient.createProject(payload);
-			newProject = { name: '', description: '', status: 'planning' as const, healthScore: 0, mrr: 0, cac: 0, ltv: 0, churnRate: 0 };
+			newProject = {
+				name: '',
+				description: '',
+				status: 'planning' as const,
+				healthScore: 0,
+				mrr: 0,
+				cac: 0,
+				ltv: 0,
+				churnRate: 0
+			};
 			showForm = false;
 			await loadProjects();
 		} catch (err: any) {
@@ -126,7 +135,7 @@
 	{#if showForm}
 		<div class="mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
 			<h2 class="mb-4 text-xl font-semibold text-gray-900">Create New Project</h2>
-			<form class="space-y-4" on:submit|preventDefault={handleCreateProject}>
+			<form class="space-y-4" onsubmit={handleCreateProject}>
 				<div>
 					<label for="name" class="mb-1 block text-sm font-medium text-gray-700">
 						Project Name
@@ -172,7 +181,9 @@
 				</div>
 
 				<div>
-					<label for="healthScore" class="mb-1 block text-sm font-medium text-gray-700">Health Score</label>
+					<label for="healthScore" class="mb-1 block text-sm font-medium text-gray-700"
+						>Health Score</label
+					>
 					<input
 						id="healthScore"
 						type="number"
@@ -225,7 +236,9 @@
 				</div>
 
 				<div>
-					<label for="churnRate" class="mb-1 block text-sm font-medium text-gray-700">Churn Rate</label>
+					<label for="churnRate" class="mb-1 block text-sm font-medium text-gray-700"
+						>Churn Rate</label
+					>
 					<input
 						id="churnRate"
 						type="number"
