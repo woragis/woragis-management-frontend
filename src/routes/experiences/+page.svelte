@@ -12,6 +12,8 @@
 	let experiences: Experience[] = [];
 	let newExperience = {
 		title: '',
+		position: '',
+		type: 'full-time',
 		company: '',
 		description: '',
 		startDate: '',
@@ -70,8 +72,9 @@
 	}
 
 	async function createExperience() {
-		if (!newExperience.title || !newExperience.company || !newExperience.startDate) {
-			error = 'Please fill in all required fields';
+
+		if (!newExperience.title || !newExperience.position || !newExperience.company || !newExperience.startDate) {
+			error = 'Please fill in all required fields (title, position, company, start date)';
 			return;
 		}
 
@@ -79,10 +82,23 @@
 		error = null;
 
 		try {
-			const created = await experiencesClient.createExperience(newExperience);
+			// Map frontend fields to backend expected fields
+			const payload = {
+				company: newExperience.company,
+				position: newExperience.position,
+				type: newExperience.type,
+				description: newExperience.description,
+				periodStart: newExperience.startDate,
+				periodEnd: newExperience.endDate,
+				technologies: newExperience.skills,
+				// Optionally add more fields if needed
+			};
+			const created = await experiencesClient.createExperience(payload);
 			experiences = [created, ...experiences];
 			newExperience = {
 				title: '',
+				position: '',
+				type: 'full-time',
 				company: '',
 				description: '',
 				startDate: '',
@@ -153,6 +169,35 @@
 						placeholder="e.g., Senior Developer"
 						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:outline-none"
 					/>
+				</div>
+
+				<div>
+					<label for="position" class="mb-1 block text-sm font-medium text-gray-700">
+						Position *
+					</label>
+					<input
+						id="position"
+						type="text"
+						bind:value={newExperience.position}
+						placeholder="e.g., Backend Engineer"
+						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+					/>
+				</div>
+
+				<div>
+					<label for="type" class="mb-1 block text-sm font-medium text-gray-700">
+						Type *
+					</label>
+					<select
+						id="type"
+						bind:value={newExperience.type}
+						class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+					>
+						<option value="full-time">Full-time</option>
+						<option value="freelance">Freelance</option>
+						<option value="contract">Contract</option>
+						<option value="internship">Internship</option>
+					</select>
 				</div>
 
 				<div>

@@ -12,7 +12,12 @@
 	let newProject = {
 		name: '',
 		description: '',
-		status: 'planning' as const
+		status: 'planning' as const,
+		healthScore: 0,
+		mrr: 0,
+		cac: 0,
+		ltv: 0,
+		churnRate: 0
 	};
 	let showForm = false;
 	let creating = false;
@@ -62,8 +67,19 @@
 		creating = true;
 
 		try {
-			await projectsClient.createProject(newProject);
-			newProject = { name: '', description: '', status: 'planning' as const };
+			// Map frontend fields to backend expected fields
+			const payload = {
+				name: newProject.name,
+				description: newProject.description,
+				status: newProject.status,
+				healthScore: Number(newProject.healthScore),
+				mrr: Number(newProject.mrr),
+				cac: Number(newProject.cac),
+				ltv: Number(newProject.ltv),
+				churnRate: Number(newProject.churnRate)
+			};
+			await projectsClient.createProject(payload);
+			newProject = { name: '', description: '', status: 'planning' as const, healthScore: 0, mrr: 0, cac: 0, ltv: 0, churnRate: 0 };
 			showForm = false;
 			await loadProjects();
 		} catch (err: any) {
@@ -110,7 +126,7 @@
 	{#if showForm}
 		<div class="mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
 			<h2 class="mb-4 text-xl font-semibold text-gray-900">Create New Project</h2>
-			<form class="space-y-4" onsubmit={handleCreateProject}>
+			<form class="space-y-4" on:submit|preventDefault={handleCreateProject}>
 				<div>
 					<label for="name" class="mb-1 block text-sm font-medium text-gray-700">
 						Project Name
@@ -148,11 +164,77 @@
 						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
 					>
 						<option value="planning">Planning</option>
-						<option value="in_progress">In Progress</option>
-						<option value="on_hold">On Hold</option>
+						<option value="idea">Idea</option>
+						<option value="executing">Executing</option>
+						<option value="monitoring">Monitoring</option>
 						<option value="completed">Completed</option>
-						<option value="archived">Archived</option>
 					</select>
+				</div>
+
+				<div>
+					<label for="healthScore" class="mb-1 block text-sm font-medium text-gray-700">Health Score</label>
+					<input
+						id="healthScore"
+						type="number"
+						bind:value={newProject.healthScore}
+						min="0"
+						max="100"
+						required
+						disabled={creating}
+						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+					/>
+				</div>
+
+				<div>
+					<label for="mrr" class="mb-1 block text-sm font-medium text-gray-700">MRR</label>
+					<input
+						id="mrr"
+						type="number"
+						bind:value={newProject.mrr}
+						min="0"
+						step="0.01"
+						disabled={creating}
+						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+					/>
+				</div>
+
+				<div>
+					<label for="cac" class="mb-1 block text-sm font-medium text-gray-700">CAC</label>
+					<input
+						id="cac"
+						type="number"
+						bind:value={newProject.cac}
+						min="0"
+						step="0.01"
+						disabled={creating}
+						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+					/>
+				</div>
+
+				<div>
+					<label for="ltv" class="mb-1 block text-sm font-medium text-gray-700">LTV</label>
+					<input
+						id="ltv"
+						type="number"
+						bind:value={newProject.ltv}
+						min="0"
+						step="0.01"
+						disabled={creating}
+						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+					/>
+				</div>
+
+				<div>
+					<label for="churnRate" class="mb-1 block text-sm font-medium text-gray-700">Churn Rate</label>
+					<input
+						id="churnRate"
+						type="number"
+						bind:value={newProject.churnRate}
+						min="0"
+						step="0.01"
+						disabled={creating}
+						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+					/>
 				</div>
 
 				<button
