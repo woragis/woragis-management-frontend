@@ -87,16 +87,23 @@
 
 		try {
 			// Map frontend fields to backend expected fields
-			const payload = {
-				company: newExperience.company,
-				position: newExperience.position,
-				type: newExperience.type,
-				description: newExperience.description,
-				periodStart: newExperience.startDate,
-				periodEnd: newExperience.endDate,
-				technologies: newExperience.skills
-				// Optionally add more fields if needed
-			};
+			   // Convert dates to ISO 8601 format if present
+			   function toISODate(dateStr: string) {
+				   if (!dateStr) return undefined;
+				   // If already contains 'T', assume it's ISO
+				   if (dateStr.includes('T')) return dateStr;
+				   return dateStr + 'T00:00:00Z';
+			   }
+			   const payload = {
+				   company: newExperience.company,
+				   position: newExperience.position,
+				   type: newExperience.type,
+				   description: newExperience.description,
+				   periodStart: toISODate(newExperience.startDate),
+				   periodEnd: toISODate(newExperience.endDate),
+				   technologies: newExperience.skills
+				   // Optionally add more fields if needed
+			   };
 			const created = await experiencesClient.createExperience(payload);
 			experiences = [created, ...experiences];
 			newExperience = {
