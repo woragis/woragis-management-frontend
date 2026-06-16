@@ -51,6 +51,7 @@ export function ProjectDetailPage() {
         repoUrl: String(fd.get('repoUrl')),
         demoUrl: String(fd.get('demoUrl')),
         githubUrl: String(fd.get('githubUrl')),
+        repoVisibility: String(fd.get('repoVisibility')) as Project['repoVisibility'],
         publicSlug: String(fd.get('publicSlug')),
         displayOrder: Number(fd.get('displayOrder') || 0),
         stack: String(fd.get('stack'))
@@ -161,7 +162,14 @@ export function ProjectDetailPage() {
           </label>
           <label>
             GitHub URL
-            <input name="githubUrl" defaultValue={project.githubUrl} />
+            <input name="githubUrl" defaultValue={project.githubUrl} placeholder="https://github.com/user/repo" />
+          </label>
+          <label>
+            Repository visibility
+            <select name="repoVisibility" defaultValue={project.repoVisibility || 'private'}>
+              <option value="private">Private (hidden on landing)</option>
+              <option value="public">Public (show on landing)</option>
+            </select>
           </label>
           <label className="checkbox">
             <input name="isPublic" type="checkbox" defaultChecked={project.isPublic} />

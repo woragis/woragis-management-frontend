@@ -10,6 +10,7 @@ export type Project = {
   repoUrl: string
   demoUrl: string
   githubUrl: string
+  repoVisibility: 'public' | 'private'
   notes: string
   isPublic: boolean
   featured: boolean
