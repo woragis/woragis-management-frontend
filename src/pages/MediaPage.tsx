@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { api } from '../api/client'
 import type { MediaAsset } from '../api/types'
+import { useConfirm } from '../context/ConfirmContext'
+import { useToast } from '../context/ToastContext'
 
 export function MediaPage() {
+  const { toast } = useToast()
+  const { confirm } = useConfirm()
   const [items, setItems] = useState<MediaAsset[]>([])
-  const [error, setError] = useState('')
   const [uploading, setUploading] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -12,7 +15,7 @@ export function MediaPage() {
     try {
       setItems(await api.media.list())
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load')
+      toast(e instanceof Error ? e.message : 'Failed to load', 'error')
     }
   }
 
@@ -22,12 +25,12 @@ export function MediaPage() {
 
   async function onUpload(file: File) {
     setUploading(true)
-    setError('')
     try {
       await api.media.upload(file)
       await load()
+      toast('File uploaded.', 'success')
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Upload failed')
+      toast(e instanceof Error ? e.message : 'Upload failed', 'error')
     } finally {
       setUploading(false)
     }
@@ -63,8 +66,6 @@ export function MediaPage() {
         </div>
       </header>
 
-      {error && <p className="error">{error}</p>}
-
       <div className="media-grid">
         {items.map((m) => (
           <article key={m.id} className="card media-card">
@@ -80,7 +81,10 @@ export function MediaPage() {
                 <button
                   type="button"
                   className="btn small"
-                  onClick={() => navigator.clipboard.writeText(m.id)}
+                  onClick={() => {
+                    void navigator.clipboard.writeText(m.id)
+                    toast('ID copied.', 'success')
+                  }}
                 >
                   Copy ID
                 </button>
@@ -88,9 +92,10 @@ export function MediaPage() {
                   type="button"
                   className="btn small danger"
                   onClick={async () => {
-                    if (!confirm('Delete this asset?')) return
+                    if (!(await confirm('Delete this asset?'))) return
                     await api.media.delete(m.id)
                     await load()
+                    toast('Asset deleted.', 'success')
                   }}
                 >
                   Delete

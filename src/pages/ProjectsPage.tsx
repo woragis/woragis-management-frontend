@@ -1,20 +1,28 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
-import type { Project } from '../api/types'
+import type { Project, ProjectFilters } from '../api/types'
 
 export function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
+  const [filters, setFilters] = useState<ProjectFilters>({})
+  const [search, setSearch] = useState('')
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    setLoading(true)
     api.projects
-      .list()
+      .list({ ...filters, q: search || undefined })
       .then(setProjects)
       .catch((e) => setError(e instanceof Error ? e.message : 'Failed to load'))
       .finally(() => setLoading(false))
-  }, [])
+  }, [filters, search])
+
+  useEffect(() => {
+    const t = setTimeout(load, search ? 300 : 0)
+    return () => clearTimeout(t)
+  }, [load, search])
 
   return (
     <div className="page">
@@ -27,6 +35,54 @@ export function ProjectsPage() {
           New project
         </Link>
       </header>
+
+      <div className="card filters-bar">
+        <input
+          type="search"
+          placeholder="Search name, slug, stack…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <select
+          value={filters.status ?? ''}
+          onChange={(e) =>
+            setFilters((f) => ({ ...f, status: e.target.value || undefined }))
+          }
+        >
+          <option value="">All statuses</option>
+          <option value="active">active</option>
+          <option value="paused">paused</option>
+          <option value="archived">archived</option>
+        </select>
+        <select
+          value={filters.isPublic === undefined ? '' : String(filters.isPublic)}
+          onChange={(e) => {
+            const v = e.target.value
+            setFilters((f) => ({
+              ...f,
+              isPublic: v === '' ? undefined : v === 'true',
+            }))
+          }}
+        >
+          <option value="">Public: any</option>
+          <option value="true">Public only</option>
+          <option value="false">Private only</option>
+        </select>
+        <select
+          value={filters.featured === undefined ? '' : String(filters.featured)}
+          onChange={(e) => {
+            const v = e.target.value
+            setFilters((f) => ({
+              ...f,
+              featured: v === '' ? undefined : v === 'true',
+            }))
+          }}
+        >
+          <option value="">Featured: any</option>
+          <option value="true">Featured</option>
+          <option value="false">Not featured</option>
+        </select>
+      </div>
 
       {loading && <p className="muted">Loading…</p>}
       {error && <p className="error">{error}</p>}
@@ -48,7 +104,7 @@ export function ProjectsPage() {
               {projects.length === 0 && (
                 <tr>
                   <td colSpan={6} className="muted">
-                    No projects yet.
+                    No projects match your filters.
                   </td>
                 </tr>
               )}

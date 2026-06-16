@@ -7,6 +7,9 @@ import type {
   ProjectGalleryItem,
   ProjectLink,
   ProjectSecret,
+  ProjectEnv,
+  Dashboard,
+  ProjectFilters,
   SocialLink,
 } from './types'
 
@@ -58,8 +61,19 @@ async function request<T>(
 }
 
 export const api = {
+  dashboard: {
+    get: () => request<Dashboard>('/v1/admin/dashboard'),
+  },
   projects: {
-    list: () => request<Project[]>('/v1/admin/projects'),
+    list: (filters?: ProjectFilters) => {
+      const params = new URLSearchParams()
+      if (filters?.status) params.set('status', filters.status)
+      if (filters?.isPublic !== undefined) params.set('isPublic', String(filters.isPublic))
+      if (filters?.featured !== undefined) params.set('featured', String(filters.featured))
+      if (filters?.q) params.set('q', filters.q)
+      const qs = params.toString()
+      return request<Project[]>(`/v1/admin/projects${qs ? `?${qs}` : ''}`)
+    },
     get: (id: string) => request<Project>(`/v1/admin/projects/${id}`),
     create: (body: Partial<Project> & { name: string }) =>
       request<Project>('/v1/admin/projects', {
@@ -105,6 +119,15 @@ export const api = {
       }),
     deleteGallery: (id: string, itemId: string) =>
       request<void>(`/v1/admin/projects/${id}/gallery/${itemId}`, { method: 'DELETE' }),
+    listEnvs: (id: string) =>
+      request<ProjectEnv[]>(`/v1/admin/projects/${id}/envs`),
+    addEnv: (id: string, body: { key: string; value: string; environment?: string; notes?: string }) =>
+      request<ProjectEnv>(`/v1/admin/projects/${id}/envs`, {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    deleteEnv: (id: string, envId: string) =>
+      request<void>(`/v1/admin/projects/${id}/envs/${envId}`, { method: 'DELETE' }),
   },
   media: {
     list: () => request<MediaAsset[]>('/v1/admin/media'),

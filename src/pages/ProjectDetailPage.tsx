@@ -1,37 +1,43 @@
 import { type FormEvent, useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { ImagePicker } from '../components/ImagePicker'
+import { MarkdownField } from '../components/MarkdownPreview'
 import { api } from '../api/client'
-import type { Project, ProjectDomain, ProjectLink, ProjectSecret } from '../api/types'
+import type { Project, ProjectDomain, ProjectEnv, ProjectLink, ProjectSecret } from '../api/types'
+import { useConfirm } from '../context/ConfirmContext'
+import { useToast } from '../context/ToastContext'
 
-type Tab = 'general' | 'links' | 'domains' | 'secrets' | 'gallery'
+type Tab = 'general' | 'links' | 'domains' | 'secrets' | 'env' | 'gallery'
 
 export function ProjectDetailPage() {
   const { id = '' } = useParams()
   const navigate = useNavigate()
+  const { toast } = useToast()
+  const { confirm } = useConfirm()
   const [project, setProject] = useState<Project | null>(null)
   const [tab, setTab] = useState<Tab>('general')
-  const [error, setError] = useState('')
-  const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [coverImageId, setCoverImageId] = useState<string | null>(null)
+  const [longDescription, setLongDescription] = useState('')
 
   const reload = useCallback(async () => {
     const p = await api.projects.get(id)
     setProject(p)
+    setCoverImageId(p.coverImageId)
+    setLongDescription(p.longDescription)
   }, [id])
 
   useEffect(() => {
     reload()
-      .catch((e) => setError(e instanceof Error ? e.message : 'Failed to load'))
+      .catch((e) => toast(e instanceof Error ? e.message : 'Failed to load', 'error'))
       .finally(() => setLoading(false))
-  }, [reload])
+  }, [reload, toast])
 
   async function saveGeneral(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     if (!project) return
     setSaving(true)
-    setMessage('')
-    setError('')
     const fd = new FormData(e.currentTarget)
     try {
       const updated = await api.projects.update(id, {
@@ -39,7 +45,7 @@ export function ProjectDetailPage() {
         slug: String(fd.get('slug')),
         status: String(fd.get('status')) as Project['status'],
         shortDescription: String(fd.get('shortDescription')),
-        longDescription: String(fd.get('longDescription')),
+        longDescription,
         description: String(fd.get('description')),
         notes: String(fd.get('notes')),
         repoUrl: String(fd.get('repoUrl')),
@@ -53,24 +59,29 @@ export function ProjectDetailPage() {
           .filter(Boolean),
         isPublic: fd.get('isPublic') === 'on',
         featured: fd.get('featured') === 'on',
+        coverImageId,
       })
       setProject(updated)
-      setMessage('Saved.')
+      toast('Project saved.', 'success')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Save failed')
+      toast(err instanceof Error ? err.message : 'Save failed', 'error')
     } finally {
       setSaving(false)
     }
   }
 
   async function deleteProject() {
-    if (!confirm('Delete this project and all related data?')) return
-    await api.projects.delete(id)
-    navigate('/projects')
+    if (!(await confirm('Delete this project and all related data?'))) return
+    try {
+      await api.projects.delete(id)
+      toast('Project deleted.', 'success')
+      navigate('/projects')
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'Delete failed', 'error')
+    }
   }
 
   if (loading) return <div className="page"><p className="muted">Loading…</p></div>
-  if (error && !project) return <div className="page"><p className="error">{error}</p></div>
   if (!project) return null
 
   return (
@@ -87,30 +98,22 @@ export function ProjectDetailPage() {
       </header>
 
       <div className="tabs">
-        {(['general', 'links', 'domains', 'secrets', 'gallery'] as Tab[]).map((t) => (
-          <button
-            key={t}
-            type="button"
-            className={tab === t ? 'active' : ''}
-            onClick={() => setTab(t)}
-          >
+        {(['general', 'links', 'domains', 'secrets', 'env', 'gallery'] as Tab[]).map((t) => (
+          <button key={t} type="button" className={tab === t ? 'active' : ''} onClick={() => setTab(t)}>
             {t}
           </button>
         ))}
       </div>
 
-      {message && <p className="success">{message}</p>}
-      {error && <p className="error">{error}</p>}
-
       {tab === 'general' && (
         <form className="card form-grid" onSubmit={saveGeneral}>
           <label>
             Name
-            <input name="name" defaultValue={project.name} required />
+            <input name="name" defaultValue={project.name} required key={project.updatedAt} />
           </label>
           <label>
             Slug
-            <input name="slug" defaultValue={project.slug} />
+            <input name="slug" defaultValue={project.slug} key={`slug-${project.updatedAt}`} />
           </label>
           <label>
             Status
@@ -128,14 +131,14 @@ export function ProjectDetailPage() {
             Public slug
             <input name="publicSlug" defaultValue={project.publicSlug} placeholder="lokra-crm" />
           </label>
+          <div className="full">
+            <ImagePicker label="Cover image" value={coverImageId} onChange={setCoverImageId} />
+          </div>
           <label className="full">
             Short description
             <input name="shortDescription" defaultValue={project.shortDescription} />
           </label>
-          <label className="full">
-            Long description
-            <textarea name="longDescription" rows={4} defaultValue={project.longDescription} />
-          </label>
+          <MarkdownField label="Long description (markdown)" value={longDescription} onChange={setLongDescription} rows={6} />
           <label className="full">
             Internal description
             <textarea name="description" rows={3} defaultValue={project.description} />
@@ -176,29 +179,18 @@ export function ProjectDetailPage() {
         </form>
       )}
 
-      {tab === 'links' && (
-        <LinksTab projectId={id} links={project.links ?? []} onChange={reload} />
-      )}
-      {tab === 'domains' && (
-        <DomainsTab projectId={id} domains={project.domains ?? []} onChange={reload} />
-      )}
+      {tab === 'links' && <LinksTab projectId={id} links={project.links ?? []} onChange={reload} />}
+      {tab === 'domains' && <DomainsTab projectId={id} domains={project.domains ?? []} onChange={reload} />}
       {tab === 'secrets' && <SecretsTab projectId={id} />}
-      {tab === 'gallery' && (
-        <GalleryTab projectId={id} items={project.gallery ?? []} onChange={reload} />
-      )}
+      {tab === 'env' && <EnvsTab projectId={id} envs={project.envs ?? []} onChange={reload} />}
+      {tab === 'gallery' && <GalleryTab projectId={id} items={project.gallery ?? []} onChange={reload} />}
     </div>
   )
 }
 
-function LinksTab({
-  projectId,
-  links,
-  onChange,
-}: {
-  projectId: string
-  links: ProjectLink[]
-  onChange: () => Promise<void>
-}) {
+function LinksTab({ projectId, links, onChange }: { projectId: string; links: ProjectLink[]; onChange: () => Promise<void> }) {
+  const { toast } = useToast()
+  const { confirm } = useConfirm()
   const [type, setType] = useState('frontend')
   const [url, setUrl] = useState('')
   const [environment, setEnvironment] = useState('production')
@@ -207,9 +199,14 @@ function LinksTab({
 
   async function add(e: FormEvent) {
     e.preventDefault()
-    await api.projects.addLink(projectId, { type, url, environment, label, isPublic })
-    setUrl('')
-    await onChange()
+    try {
+      await api.projects.addLink(projectId, { type, url, environment, label, isPublic })
+      setUrl('')
+      await onChange()
+      toast('Link added.', 'success')
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'Failed', 'error')
+    }
   }
 
   return (
@@ -261,8 +258,10 @@ function LinksTab({
               type="button"
               className="btn small danger"
               onClick={async () => {
+                if (!(await confirm('Remove this link?'))) return
                 await api.projects.deleteLink(projectId, l.id)
                 await onChange()
+                toast('Link removed.', 'success')
               }}
             >
               Remove
@@ -275,24 +274,23 @@ function LinksTab({
   )
 }
 
-function DomainsTab({
-  projectId,
-  domains,
-  onChange,
-}: {
-  projectId: string
-  domains: ProjectDomain[]
-  onChange: () => Promise<void>
-}) {
+function DomainsTab({ projectId, domains, onChange }: { projectId: string; domains: ProjectDomain[]; onChange: () => Promise<void> }) {
+  const { toast } = useToast()
+  const { confirm } = useConfirm()
   const [domain, setDomain] = useState('')
   const [registrar, setRegistrar] = useState('')
   const [purpose, setPurpose] = useState('')
 
   async function add(e: FormEvent) {
     e.preventDefault()
-    await api.projects.addDomain(projectId, { domain, registrar, purpose })
-    setDomain('')
-    await onChange()
+    try {
+      await api.projects.addDomain(projectId, { domain, registrar, purpose })
+      setDomain('')
+      await onChange()
+      toast('Domain added.', 'success')
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'Failed', 'error')
+    }
   }
 
   return (
@@ -318,13 +316,16 @@ function DomainsTab({
             <div>
               <strong>{d.domain}</strong>
               {d.registrar && <span className="muted"> · {d.registrar}</span>}
+              {d.expiresAt && <span className="muted small"> · expires {new Date(d.expiresAt).toLocaleDateString()}</span>}
             </div>
             <button
               type="button"
               className="btn small danger"
               onClick={async () => {
+                if (!(await confirm('Remove this domain?'))) return
                 await api.projects.deleteDomain(projectId, d.id)
                 await onChange()
+                toast('Domain removed.', 'success')
               }}
             >
               Remove
@@ -338,6 +339,8 @@ function DomainsTab({
 }
 
 function SecretsTab({ projectId }: { projectId: string }) {
+  const { toast } = useToast()
+  const { confirm } = useConfirm()
   const [secrets, setSecrets] = useState<ProjectSecret[]>([])
   const [name, setName] = useState('')
   const [value, setValue] = useState('')
@@ -350,15 +353,15 @@ function SecretsTab({ projectId }: { projectId: string }) {
 
   async function add(e: FormEvent) {
     e.preventDefault()
-    await api.projects.addSecret(projectId, { name, value, service })
-    setName('')
-    setValue('')
-    setSecrets(await api.projects.listSecrets(projectId))
-  }
-
-  async function reveal(secretId: string) {
-    const s = await api.projects.getSecret(projectId, secretId)
-    setRevealed((prev) => ({ ...prev, [secretId]: s.value ?? '' }))
+    try {
+      await api.projects.addSecret(projectId, { name, value, service })
+      setName('')
+      setValue('')
+      setSecrets(await api.projects.listSecrets(projectId))
+      toast('Secret added.', 'success')
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'Failed', 'error')
+    }
   }
 
   return (
@@ -384,20 +387,27 @@ function SecretsTab({ projectId }: { projectId: string }) {
             <div>
               <strong>{s.name}</strong>
               {s.service && <span className="muted"> · {s.service}</span>}
-              {revealed[s.id] && (
-                <code className="secret-value">{revealed[s.id]}</code>
-              )}
+              {revealed[s.id] && <code className="secret-value">{revealed[s.id]}</code>}
             </div>
             <div className="row-actions">
-              <button type="button" className="btn small" onClick={() => reveal(s.id)}>
+              <button
+                type="button"
+                className="btn small"
+                onClick={async () => {
+                  const item = await api.projects.getSecret(projectId, s.id)
+                  setRevealed((prev) => ({ ...prev, [s.id]: item.value ?? '' }))
+                }}
+              >
                 Reveal
               </button>
               <button
                 type="button"
                 className="btn small danger"
                 onClick={async () => {
+                  if (!(await confirm('Delete this secret?'))) return
                   await api.projects.deleteSecret(projectId, s.id)
                   setSecrets(await api.projects.listSecrets(projectId))
+                  toast('Secret removed.', 'success')
                 }}
               >
                 Remove
@@ -411,37 +421,124 @@ function SecretsTab({ projectId }: { projectId: string }) {
   )
 }
 
+function EnvsTab({
+  projectId,
+  envs,
+  onChange,
+}: {
+  projectId: string
+  envs: ProjectEnv[]
+  onChange: () => Promise<void>
+}) {
+  const { toast } = useToast()
+  const { confirm } = useConfirm()
+  const [key, setKey] = useState('')
+  const [value, setValue] = useState('')
+  const [environment, setEnvironment] = useState('production')
+
+  async function add(e: FormEvent) {
+    e.preventDefault()
+    try {
+      await api.projects.addEnv(projectId, { key, value, environment })
+      setKey('')
+      setValue('')
+      await onChange()
+      toast('Env var added.', 'success')
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'Failed', 'error')
+    }
+  }
+
+  return (
+    <div className="stack-section">
+      <form className="card form-grid inline-add" onSubmit={add}>
+        <label>
+          Key
+          <input required value={key} onChange={(e) => setKey(e.target.value)} placeholder="NEXT_PUBLIC_API_URL" />
+        </label>
+        <label className="span-2">
+          Value
+          <input required value={value} onChange={(e) => setValue(e.target.value)} />
+        </label>
+        <label>
+          Environment
+          <select value={environment} onChange={(e) => setEnvironment(e.target.value)}>
+            <option value="production">production</option>
+            <option value="staging">staging</option>
+            <option value="local">local</option>
+          </select>
+        </label>
+        <button type="submit" className="btn primary">Add env</button>
+      </form>
+      <ul className="item-list card">
+        {envs.map((env) => (
+          <li key={env.id}>
+            <div>
+              <code>{env.key}</code>
+              <span className="muted"> · {env.environment}</span>
+              <div className="small">{env.value}</div>
+            </div>
+            <button
+              type="button"
+              className="btn small danger"
+              onClick={async () => {
+                if (!(await confirm(`Delete ${env.key}?`))) return
+                await api.projects.deleteEnv(projectId, env.id)
+                await onChange()
+                toast('Env var removed.', 'success')
+              }}
+            >
+              Remove
+            </button>
+          </li>
+        ))}
+        {envs.length === 0 && <li className="muted">No environment variables yet.</li>}
+      </ul>
+    </div>
+  )
+}
+
 function GalleryTab({
   projectId,
   items,
   onChange,
 }: {
   projectId: string
-  items: { id: string; mediaAssetId: string; caption: string; displayOrder: number }[]
+  items: { id: string; mediaAssetId: string; caption: string }[]
   onChange: () => Promise<void>
 }) {
-  const [mediaAssetId, setMediaAssetId] = useState('')
+  const { toast } = useToast()
+  const { confirm } = useConfirm()
+  const [mediaAssetId, setMediaAssetId] = useState<string | null>(null)
   const [caption, setCaption] = useState('')
 
   async function add(e: FormEvent) {
     e.preventDefault()
-    await api.projects.addGallery(projectId, { mediaAssetId, caption })
-    setMediaAssetId('')
-    await onChange()
+    if (!mediaAssetId) return
+    try {
+      await api.projects.addGallery(projectId, { mediaAssetId, caption })
+      setMediaAssetId(null)
+      setCaption('')
+      await onChange()
+      toast('Gallery item added.', 'success')
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'Failed', 'error')
+    }
   }
 
   return (
     <div className="stack-section">
       <form className="card form-grid inline-add" onSubmit={add}>
-        <label className="span-2">
-          Media asset ID
-          <input required value={mediaAssetId} onChange={(e) => setMediaAssetId(e.target.value)} placeholder="UUID from Media page" />
-        </label>
+        <div className="span-2">
+          <ImagePicker label="Image" value={mediaAssetId} onChange={setMediaAssetId} />
+        </div>
         <label>
           Caption
           <input value={caption} onChange={(e) => setCaption(e.target.value)} />
         </label>
-        <button type="submit" className="btn primary">Add to gallery</button>
+        <button type="submit" className="btn primary" disabled={!mediaAssetId}>
+          Add to gallery
+        </button>
       </form>
       <ul className="item-list card">
         {items.map((item) => (
@@ -454,15 +551,17 @@ function GalleryTab({
               type="button"
               className="btn small danger"
               onClick={async () => {
+                if (!(await confirm('Remove from gallery?'))) return
                 await api.projects.deleteGallery(projectId, item.id)
                 await onChange()
+                toast('Removed from gallery.', 'success')
               }}
             >
               Remove
             </button>
           </li>
         ))}
-        {items.length === 0 && <li className="muted">No gallery items. Upload media first, then paste the asset ID.</li>}
+        {items.length === 0 && <li className="muted">No gallery items yet.</li>}
       </ul>
     </div>
   )

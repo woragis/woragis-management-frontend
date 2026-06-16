@@ -22,6 +22,7 @@ export type Project = {
   links?: ProjectLink[]
   domains?: ProjectDomain[]
   gallery?: ProjectGalleryItem[]
+  envs?: ProjectEnv[]
 }
 
 export type ProjectLink = {
@@ -100,6 +101,33 @@ export type Profile = {
   socialLinks: SocialLink[]
   createdAt: string
   updatedAt: string
+}
+
+export type ProjectEnv = {
+  id: string
+  projectId: string
+  key: string
+  value: string
+  environment: string
+  notes: string
+  createdAt: string
+  updatedAt: string
+}
+
+export type Dashboard = {
+  projectCount: number
+  publicProjectCount: number
+  activeProjectCount: number
+  mediaCount: number
+  secretsExpiringSoon: ProjectSecret[]
+  domainsExpiringSoon: ProjectDomain[]
+}
+
+export type ProjectFilters = {
+  status?: string
+  isPublic?: boolean
+  featured?: boolean
+  q?: string
 }
 
 export type ApiError = {

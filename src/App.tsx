@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { Layout } from './components/Layout'
 import { useAuth } from './context/AuthContext'
 import { LoginPage } from './pages/LoginPage'
+import { DashboardPage } from './pages/DashboardPage'
 import { MediaPage } from './pages/MediaPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { ProjectDetailPage } from './pages/ProjectDetailPage'
@@ -26,7 +27,8 @@ export default function App() {
           </Protected>
         }
       >
-        <Route path="/" element={<Navigate to="/projects" replace />} />
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/projects" element={<ProjectsPage />} />
         <Route path="/projects/new" element={<ProjectNewPage />} />
         <Route path="/projects/:id" element={<ProjectDetailPage />} />
