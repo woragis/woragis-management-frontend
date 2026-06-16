@@ -135,3 +135,118 @@ export type ApiError = {
   code: string
   message: string
 }
+
+export type IncomeSource = {
+  id: string
+  name: string
+  type: string
+  amountCents: number
+  currency: string
+  frequency: string
+  dayOfMonth: number
+  projectId: string | null
+  active: boolean
+  notes: string
+  createdAt: string
+  updatedAt: string
+}
+
+export type Expense = {
+  id: string
+  name: string
+  category: string
+  amountCents: number
+  currency: string
+  frequency: string
+  dayOfMonth: number
+  dueDate: string | null
+  autoPay: boolean
+  projectId: string | null
+  active: boolean
+  notes: string
+  createdAt: string
+  updatedAt: string
+}
+
+export type Transaction = {
+  id: string
+  type: 'income' | 'expense'
+  amountCents: number
+  currency: string
+  description: string
+  date: string
+  incomeSourceId: string | null
+  expenseId: string | null
+  projectId: string | null
+  invoiceId: string | null
+  notes: string
+  createdAt: string
+  updatedAt: string
+}
+
+export type Invoice = {
+  id: string
+  name: string
+  cardLastFour: string
+  dueDate: string
+  closedAt: string | null
+  totalCents: number
+  paidCents: number
+  status: 'open' | 'paid' | 'overdue'
+  notes: string
+  createdAt: string
+  updatedAt: string
+  items?: InvoiceItem[]
+}
+
+export type InvoiceItem = {
+  id: string
+  invoiceId: string
+  description: string
+  amountCents: number
+  date: string
+  category: string
+  installment: string
+  notes: string
+  createdAt: string
+  updatedAt: string
+}
+
+export type BudgetPlan = {
+  id: string
+  year: number
+  month: number
+  category: string
+  plannedCents: number
+  notes: string
+  createdAt: string
+  updatedAt: string
+}
+
+export type FinanceDashboard = {
+  monthIncomeCents: number
+  monthExpenseCents: number
+  monthNetCents: number
+  openInvoiceCount: number
+  activeIncomeCount: number
+  activeExpenseCount: number
+  upcomingInvoices: Invoice[]
+}
+
+export type MonthlySummary = {
+  year: number
+  month: number
+  incomeCents: number
+  expenseCents: number
+  netCents: number
+  byCategory: Record<string, number>
+  budgets?: BudgetPlan[]
+}
+
+export type CalendarEvent = {
+  date: string
+  type: 'income' | 'expense' | 'invoice'
+  title: string
+  amountCents: number
+  refId: string
+}
