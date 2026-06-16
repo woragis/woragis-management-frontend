@@ -9,6 +9,14 @@ import { ProfilePage } from './pages/ProfilePage'
 import { ProjectDetailPage } from './pages/ProjectDetailPage'
 import { ProjectNewPage } from './pages/ProjectNewPage'
 import { ProjectsPage } from './pages/ProjectsPage'
+import { FinanceLayout } from './pages/finance/FinanceLayout'
+import { FinanceDashboardPage } from './pages/finance/FinanceDashboardPage'
+import { FinanceIncomePage } from './pages/finance/FinanceIncomePage'
+import { FinanceExpensesPage } from './pages/finance/FinanceExpensesPage'
+import { FinanceTransactionsPage } from './pages/finance/FinanceTransactionsPage'
+import { FinanceInvoicesPage } from './pages/finance/FinanceInvoicesPage'
+import { FinanceInvoiceDetailPage } from './pages/finance/FinanceInvoiceDetailPage'
+import { FinanceBudgetsPage } from './pages/finance/FinanceBudgetsPage'
 
 function Protected({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth()
@@ -34,6 +42,15 @@ export default function App() {
         <Route path="/projects/:id" element={<ProjectDetailPage />} />
         <Route path="/media" element={<MediaPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/finance" element={<FinanceLayout />}>
+          <Route index element={<FinanceDashboardPage />} />
+          <Route path="income" element={<FinanceIncomePage />} />
+          <Route path="expenses" element={<FinanceExpensesPage />} />
+          <Route path="transactions" element={<FinanceTransactionsPage />} />
+          <Route path="invoices" element={<FinanceInvoicesPage />} />
+          <Route path="budgets" element={<FinanceBudgetsPage />} />
+        </Route>
+        <Route path="/finance/invoices/:id" element={<FinanceInvoiceDetailPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/projects" replace />} />
     </Routes>

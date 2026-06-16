@@ -27,6 +27,9 @@ export function Layout() {
           <NavLink to="/profile" className={({ isActive }) => (isActive ? 'active' : '')}>
             Profile
           </NavLink>
+          <NavLink to="/finance" className={({ isActive }) => (isActive ? 'active' : '')}>
+            Finance
+          </NavLink>
         </nav>
         <button type="button" className="btn ghost sidebar-logout" onClick={logout}>
           Log out
