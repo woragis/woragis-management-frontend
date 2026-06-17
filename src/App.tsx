@@ -21,6 +21,9 @@ import { ContentLayout } from './pages/content/ContentLayout'
 import { LeetcodeVideosPage } from './pages/content/leetcode/LeetcodeVideosPage'
 import { LeetcodeVideoDetailPage } from './pages/content/leetcode/LeetcodeVideoDetailPage'
 import { LeetcodeTemplatesPage } from './pages/content/leetcode/LeetcodeTemplatesPage'
+import { LeetcodeSettingsPage } from './pages/content/leetcode/LeetcodeSettingsPage'
+import { LeetcodeWhatsappPage } from './pages/content/leetcode/LeetcodeWhatsappPage'
+import { LeetcodeWhatsappTemplatesPage } from './pages/content/leetcode/LeetcodeWhatsappTemplatesPage'
 
 function Protected({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth()
@@ -58,6 +61,9 @@ export default function App() {
         <Route path="/content" element={<ContentLayout />}>
           <Route path="leetcode" element={<LeetcodeVideosPage />} />
           <Route path="leetcode/templates" element={<LeetcodeTemplatesPage />} />
+          <Route path="leetcode/settings" element={<LeetcodeSettingsPage />} />
+          <Route path="leetcode/whatsapp" element={<LeetcodeWhatsappPage />} />
+          <Route path="leetcode/whatsapp-templates" element={<LeetcodeWhatsappTemplatesPage />} />
         </Route>
         <Route path="/content/leetcode/:id" element={<LeetcodeVideoDetailPage />} />
       </Route>

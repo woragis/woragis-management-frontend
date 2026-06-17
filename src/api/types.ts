@@ -255,16 +255,68 @@ export type LeetcodeVideo = {
   id: string
   title: string
   status: 'draft' | 'published' | 'scheduled'
+  seriesNumber?: number | null
+  trackName?: string | null
+  problemTitle?: string | null
   leetcodeProblemNumber?: number | null
   leetcodeSlug?: string | null
+  studyPlanSlug?: string | null
   difficulty?: string | null
   topics?: string[]
+  shortDescription?: string | null
+  leetcodeProblemUrl?: string | null
+  leetcodeSubmissionUrl?: string | null
   notes?: string | null
   youtubeUrl?: string | null
+  problemDate?: string | null
+  whatsappEnabled?: boolean
+  whatsappProblemSentAt?: string | null
+  whatsappDiscussionSentAt?: string | null
+  whatsappSolutionSentAt?: string | null
   publishedAt?: string | null
   createdAt: string
   updatedAt: string
   thumbnails?: ContentThumbnail[]
+}
+
+export type LeetcodeChannelSettings = {
+  id: string
+  timezone: string
+  problemPostTime: string
+  discussionPostTime: string
+  solutionPostTime: string
+  weeklySummaryDay: string
+  weeklySummaryTime: string
+  discussionEnabled: boolean
+  inviteLink?: string | null
+  defaultStudyPlanSlug?: string | null
+  nextTheme?: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export type WhatsappMessageTemplate = {
+  id: string
+  channelSlug: string
+  slug: string
+  name: string
+  body: string
+  isDefault: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export type WhatsappDispatchResult = {
+  videoId?: string
+  templateSlug: string
+  message: string
+  skip?: boolean
+  skipReason?: string
+}
+
+export type WhatsappWorkerStatus = {
+  configured: boolean
+  connected: boolean
 }
 
 export type ContentThumbnail = {

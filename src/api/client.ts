@@ -23,6 +23,10 @@ import type {
   ContentPromptTemplate,
   ContentThumbnail,
   LeetcodeVideo,
+  LeetcodeChannelSettings,
+  WhatsappMessageTemplate,
+  WhatsappDispatchResult,
+  WhatsappWorkerStatus,
 } from './types'
 
 const ADMIN_KEY_STORAGE = 'woragis_admin_key'
@@ -292,7 +296,15 @@ export const api = {
             method: 'POST',
             body: JSON.stringify(body),
           }),
-        update: (id: string, body: Partial<LeetcodeVideo> & { leetcodeProblemSet?: boolean; topicsSet?: boolean }) =>
+        update: (
+          id: string,
+          body: Partial<LeetcodeVideo> & {
+            leetcodeProblemSet?: boolean
+            topicsSet?: boolean
+            seriesNumberSet?: boolean
+            problemDateSet?: boolean
+          },
+        ) =>
           request<LeetcodeVideo>(`/v1/admin/content/leetcode/videos/${id}`, {
             method: 'PATCH',
             body: JSON.stringify(body),
@@ -340,6 +352,35 @@ export const api = {
           }),
         delete: (id: string) =>
           request<void>(`/v1/admin/content/leetcode/templates/${id}`, { method: 'DELETE' }),
+      },
+      settings: {
+        get: () => request<LeetcodeChannelSettings>('/v1/admin/content/leetcode/settings'),
+        update: (body: Partial<LeetcodeChannelSettings>) =>
+          request<LeetcodeChannelSettings>('/v1/admin/content/leetcode/settings', {
+            method: 'PATCH',
+            body: JSON.stringify(body),
+          }),
+      },
+      whatsappTemplates: {
+        list: () => request<WhatsappMessageTemplate[]>('/v1/admin/content/leetcode/whatsapp-templates'),
+        update: (id: string, body: { name?: string; body?: string }) =>
+          request<WhatsappMessageTemplate>(`/v1/admin/content/leetcode/whatsapp-templates/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(body),
+          }),
+      },
+      whatsapp: {
+        status: () => request<WhatsappWorkerStatus>('/v1/admin/content/leetcode/whatsapp/status'),
+        qr: () => request<{ qr: string | null }>('/v1/admin/content/leetcode/whatsapp/qr'),
+        preview: (videoId: string, type: string) =>
+          request<{ message: string }>(
+            `/v1/admin/content/leetcode/videos/${videoId}/whatsapp-preview?type=${encodeURIComponent(type)}`,
+          ),
+        send: (videoId: string, type: string) =>
+          request<WhatsappDispatchResult>(`/v1/admin/content/leetcode/videos/${videoId}/whatsapp-send`, {
+            method: 'POST',
+            body: JSON.stringify({ type }),
+          }),
       },
     },
   },
