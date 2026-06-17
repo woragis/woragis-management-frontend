@@ -20,6 +20,9 @@ import type {
   MonthlySummary,
   BudgetPlan,
   Transaction,
+  ContentPromptTemplate,
+  ContentThumbnail,
+  LeetcodeVideo,
 } from './types'
 
 const ADMIN_KEY_STORAGE = 'woragis_admin_key'
@@ -140,6 +143,7 @@ export const api = {
   },
   media: {
     list: () => request<MediaAsset[]>('/v1/admin/media'),
+    get: (id: string) => request<MediaAsset>(`/v1/admin/media/${id}`),
     upload: (file: File, altText = '') => {
       const fd = new FormData()
       fd.append('file', file)
@@ -276,6 +280,67 @@ export const api = {
         }),
       delete: (id: string) =>
         request<void>(`/v1/admin/finance/budgets/${id}`, { method: 'DELETE' }),
+    },
+  },
+  content: {
+    leetcode: {
+      videos: {
+        list: () => request<LeetcodeVideo[]>('/v1/admin/content/leetcode/videos'),
+        get: (id: string) => request<LeetcodeVideo>(`/v1/admin/content/leetcode/videos/${id}`),
+        create: (body: Partial<LeetcodeVideo> & { title: string }) =>
+          request<LeetcodeVideo>('/v1/admin/content/leetcode/videos', {
+            method: 'POST',
+            body: JSON.stringify(body),
+          }),
+        update: (id: string, body: Partial<LeetcodeVideo> & { leetcodeProblemSet?: boolean; topicsSet?: boolean }) =>
+          request<LeetcodeVideo>(`/v1/admin/content/leetcode/videos/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(body),
+          }),
+        delete: (id: string) =>
+          request<void>(`/v1/admin/content/leetcode/videos/${id}`, { method: 'DELETE' }),
+      },
+      thumbnails: {
+        list: (videoId: string) =>
+          request<ContentThumbnail[]>(`/v1/admin/content/leetcode/videos/${videoId}/thumbnails`),
+        get: (videoId: string, id: string) =>
+          request<ContentThumbnail>(`/v1/admin/content/leetcode/videos/${videoId}/thumbnails/${id}`),
+        create: (videoId: string, body: Partial<ContentThumbnail> & { prompt: string }) =>
+          request<ContentThumbnail>(`/v1/admin/content/leetcode/videos/${videoId}/thumbnails`, {
+            method: 'POST',
+            body: JSON.stringify(body),
+          }),
+        update: (videoId: string, id: string, body: Partial<ContentThumbnail> & { referenceSet?: boolean }) =>
+          request<ContentThumbnail>(`/v1/admin/content/leetcode/videos/${videoId}/thumbnails/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(body),
+          }),
+        delete: (videoId: string, id: string) =>
+          request<void>(`/v1/admin/content/leetcode/videos/${videoId}/thumbnails/${id}`, { method: 'DELETE' }),
+        generate: (videoId: string, id: string) =>
+          request<ContentThumbnail>(`/v1/admin/content/leetcode/videos/${videoId}/thumbnails/${id}/generate`, {
+            method: 'POST',
+          }),
+        approve: (videoId: string, id: string) =>
+          request<ContentThumbnail>(`/v1/admin/content/leetcode/videos/${videoId}/thumbnails/${id}/approve`, {
+            method: 'POST',
+          }),
+      },
+      templates: {
+        list: () => request<ContentPromptTemplate[]>('/v1/admin/content/leetcode/templates'),
+        create: (body: Partial<ContentPromptTemplate> & { name: string; slug: string; promptTemplate: string }) =>
+          request<ContentPromptTemplate>('/v1/admin/content/leetcode/templates', {
+            method: 'POST',
+            body: JSON.stringify(body),
+          }),
+        update: (id: string, body: Partial<ContentPromptTemplate>) =>
+          request<ContentPromptTemplate>(`/v1/admin/content/leetcode/templates/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(body),
+          }),
+        delete: (id: string) =>
+          request<void>(`/v1/admin/content/leetcode/templates/${id}`, { method: 'DELETE' }),
+      },
     },
   },
 }

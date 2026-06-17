@@ -17,6 +17,10 @@ import { FinanceTransactionsPage } from './pages/finance/FinanceTransactionsPage
 import { FinanceInvoicesPage } from './pages/finance/FinanceInvoicesPage'
 import { FinanceInvoiceDetailPage } from './pages/finance/FinanceInvoiceDetailPage'
 import { FinanceBudgetsPage } from './pages/finance/FinanceBudgetsPage'
+import { ContentLayout } from './pages/content/ContentLayout'
+import { LeetcodeVideosPage } from './pages/content/leetcode/LeetcodeVideosPage'
+import { LeetcodeVideoDetailPage } from './pages/content/leetcode/LeetcodeVideoDetailPage'
+import { LeetcodeTemplatesPage } from './pages/content/leetcode/LeetcodeTemplatesPage'
 
 function Protected({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth()
@@ -51,6 +55,11 @@ export default function App() {
           <Route path="budgets" element={<FinanceBudgetsPage />} />
         </Route>
         <Route path="/finance/invoices/:id" element={<FinanceInvoiceDetailPage />} />
+        <Route path="/content" element={<ContentLayout />}>
+          <Route path="leetcode" element={<LeetcodeVideosPage />} />
+          <Route path="leetcode/templates" element={<LeetcodeTemplatesPage />} />
+        </Route>
+        <Route path="/content/leetcode/:id" element={<LeetcodeVideoDetailPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/projects" replace />} />
     </Routes>

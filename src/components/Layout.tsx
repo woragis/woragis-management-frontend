@@ -30,6 +30,9 @@ export function Layout() {
           <NavLink to="/finance" className={({ isActive }) => (isActive ? 'active' : '')}>
             Finance
           </NavLink>
+          <NavLink to="/content/leetcode" className={({ isActive }) => (isActive ? 'active' : '')}>
+            Content
+          </NavLink>
         </nav>
         <button type="button" className="btn ghost sidebar-logout" onClick={logout}>
           Log out

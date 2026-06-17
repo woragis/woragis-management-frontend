@@ -250,3 +250,48 @@ export type CalendarEvent = {
   amountCents: number
   refId: string
 }
+
+export type LeetcodeVideo = {
+  id: string
+  title: string
+  status: 'draft' | 'published' | 'scheduled'
+  leetcodeProblemNumber?: number | null
+  leetcodeSlug?: string | null
+  difficulty?: string | null
+  topics?: string[]
+  notes?: string | null
+  youtubeUrl?: string | null
+  publishedAt?: string | null
+  createdAt: string
+  updatedAt: string
+  thumbnails?: ContentThumbnail[]
+}
+
+export type ContentThumbnail = {
+  id: string
+  videoId: string
+  status: 'draft' | 'generating' | 'ready' | 'approved' | 'failed'
+  prompt: string
+  negativePrompt?: string | null
+  size: string
+  quality: string
+  model: string
+  mode: string
+  referenceMediaIds?: string[]
+  creativesJobId?: string | null
+  outputMediaId?: string | null
+  errorMessage?: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export type ContentPromptTemplate = {
+  id: string
+  channelSlug: string
+  name: string
+  slug: string
+  promptTemplate: string
+  isDefault: boolean
+  createdAt: string
+  updatedAt: string
+}
