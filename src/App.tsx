@@ -26,7 +26,19 @@ import { LeetcodeWhatsappPage } from './pages/content/leetcode/LeetcodeWhatsappP
 import { LeetcodeWhatsappTemplatesPage } from './pages/content/leetcode/LeetcodeWhatsappTemplatesPage'
 
 function Protected({ children }: { children: ReactNode }) {
-  const { isAuthenticated } = useAuth()
+  const { status, isAuthenticated } = useAuth()
+
+  if (status === 'loading') {
+    return (
+      <div className="login-page">
+        <div className="card login-card">
+          <h1>Woragis Management</h1>
+          <p className="muted">Carregando…</p>
+        </div>
+      </div>
+    )
+  }
+
   if (!isAuthenticated) return <Navigate to="/login" replace />
   return children
 }
@@ -67,7 +79,7 @@ export default function App() {
         </Route>
         <Route path="/content/leetcode/:id" element={<LeetcodeVideoDetailPage />} />
       </Route>
-      <Route path="*" element={<Navigate to="/projects" replace />} />
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   )
 }

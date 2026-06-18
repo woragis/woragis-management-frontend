@@ -2,7 +2,7 @@ import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export function Layout() {
-  const { logout } = useAuth()
+  const { logout, isEnvConfigured } = useAuth()
 
   return (
     <div className="app-shell">
@@ -34,9 +34,11 @@ export function Layout() {
             Content
           </NavLink>
         </nav>
-        <button type="button" className="btn ghost sidebar-logout" onClick={logout}>
-          Log out
-        </button>
+        {!isEnvConfigured ? (
+          <button type="button" className="btn ghost sidebar-logout" onClick={logout}>
+            Log out
+          </button>
+        ) : null}
       </aside>
       <main className="main">
         <Outlet />

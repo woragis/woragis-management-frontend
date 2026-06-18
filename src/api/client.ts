@@ -33,7 +33,7 @@ const ADMIN_KEY_STORAGE = 'woragis_admin_key'
 const API_URL_STORAGE = 'woragis_api_url'
 
 export function getAdminKey(): string {
-  return localStorage.getItem(ADMIN_KEY_STORAGE) ?? ''
+  return import.meta.env.VITE_ADMIN_API_KEY || localStorage.getItem(ADMIN_KEY_STORAGE) || ''
 }
 
 export function setAdminKey(key: string) {
