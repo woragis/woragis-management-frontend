@@ -27,6 +27,10 @@ import type {
   WhatsappMessageTemplate,
   WhatsappDispatchResult,
   WhatsappWorkerStatus,
+  ChannelDestination,
+  MessageTemplate,
+  ScheduledJob,
+  MessageDelivery,
 } from './types'
 
 const ADMIN_KEY_STORAGE = 'woragis_admin_key'
@@ -381,6 +385,106 @@ export const api = {
             method: 'POST',
             body: JSON.stringify({ type }),
           }),
+      },
+    },
+  },
+  messaging: {
+    destinations: {
+      list: (filters?: { channel?: string; q?: string; active?: boolean }) => {
+        const params = new URLSearchParams()
+        if (filters?.channel) params.set('channel', filters.channel)
+        if (filters?.q) params.set('q', filters.q)
+        if (filters?.active === false) params.set('active', 'false')
+        const qs = params.toString()
+        return request<ChannelDestination[]>(`/v1/admin/messaging/destinations${qs ? `?${qs}` : ''}`)
+      },
+      get: (id: string) => request<ChannelDestination>(`/v1/admin/messaging/destinations/${id}`),
+      create: (body: {
+        channel: string
+        externalId: string
+        name: string
+        description?: string
+        responsibilities?: string
+        tags?: string[]
+        active?: boolean
+      }) =>
+        request<ChannelDestination>('/v1/admin/messaging/destinations', {
+          method: 'POST',
+          body: JSON.stringify(body),
+        }),
+      update: (id: string, body: Partial<ChannelDestination> & { tags?: string[] }) =>
+        request<ChannelDestination>(`/v1/admin/messaging/destinations/${id}`, {
+          method: 'PATCH',
+          body: JSON.stringify(body),
+        }),
+      delete: (id: string) =>
+        request<void>(`/v1/admin/messaging/destinations/${id}`, { method: 'DELETE' }),
+    },
+    templates: {
+      list: (filters?: { programSlug?: string; destinationId?: string; active?: boolean }) => {
+        const params = new URLSearchParams()
+        if (filters?.programSlug) params.set('programSlug', filters.programSlug)
+        if (filters?.destinationId) params.set('destinationId', filters.destinationId)
+        if (filters?.active === false) params.set('active', 'false')
+        const qs = params.toString()
+        return request<MessageTemplate[]>(`/v1/admin/messaging/templates${qs ? `?${qs}` : ''}`)
+      },
+      get: (id: string) => request<MessageTemplate>(`/v1/admin/messaging/templates/${id}`),
+      create: (body: {
+        destinationId?: string | null
+        programSlug?: string
+        slug: string
+        name: string
+        body: string
+        composeMode?: string
+        aiPromptHint?: string
+        active?: boolean
+      }) =>
+        request<MessageTemplate>('/v1/admin/messaging/templates', {
+          method: 'POST',
+          body: JSON.stringify(body),
+        }),
+      update: (id: string, body: Partial<MessageTemplate>) =>
+        request<MessageTemplate>(`/v1/admin/messaging/templates/${id}`, {
+          method: 'PATCH',
+          body: JSON.stringify(body),
+        }),
+      delete: (id: string) =>
+        request<void>(`/v1/admin/messaging/templates/${id}`, { method: 'DELETE' }),
+    },
+    jobs: {
+      list: (enabledOnly?: boolean) => {
+        const qs = enabledOnly ? '?enabled=true' : ''
+        return request<ScheduledJob[]>(`/v1/admin/messaging/jobs${qs}`)
+      },
+      get: (id: string) => request<ScheduledJob>(`/v1/admin/messaging/jobs/${id}`),
+      create: (body: {
+        name: string
+        destinationId: string
+        templateSlug?: string
+        programAction?: string
+        cronExpr: string
+        timezone?: string
+        enabled?: boolean
+      }) =>
+        request<ScheduledJob>('/v1/admin/messaging/jobs', {
+          method: 'POST',
+          body: JSON.stringify(body),
+        }),
+      update: (id: string, body: Partial<ScheduledJob>) =>
+        request<ScheduledJob>(`/v1/admin/messaging/jobs/${id}`, {
+          method: 'PATCH',
+          body: JSON.stringify(body),
+        }),
+      delete: (id: string) => request<void>(`/v1/admin/messaging/jobs/${id}`, { method: 'DELETE' }),
+    },
+    deliveries: {
+      list: (filters?: { destinationId?: string; limit?: number }) => {
+        const params = new URLSearchParams()
+        if (filters?.destinationId) params.set('destinationId', filters.destinationId)
+        if (filters?.limit) params.set('limit', String(filters.limit))
+        const qs = params.toString()
+        return request<MessageDelivery[]>(`/v1/admin/messaging/deliveries${qs ? `?${qs}` : ''}`)
       },
     },
   },

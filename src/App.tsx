@@ -24,6 +24,12 @@ import { LeetcodeTemplatesPage } from './pages/content/leetcode/LeetcodeTemplate
 import { LeetcodeSettingsPage } from './pages/content/leetcode/LeetcodeSettingsPage'
 import { LeetcodeWhatsappPage } from './pages/content/leetcode/LeetcodeWhatsappPage'
 import { LeetcodeWhatsappTemplatesPage } from './pages/content/leetcode/LeetcodeWhatsappTemplatesPage'
+import { MessagingLayout } from './pages/messaging/MessagingLayout'
+import { MessagingDestinationsPage } from './pages/messaging/MessagingDestinationsPage'
+import { MessagingTemplatesPage } from './pages/messaging/MessagingTemplatesPage'
+import { MessagingJobsPage } from './pages/messaging/MessagingJobsPage'
+import { MessagingDeliveriesPage } from './pages/messaging/MessagingDeliveriesPage'
+import { MessagingChannelsPage } from './pages/messaging/MessagingChannelsPage'
 
 function Protected({ children }: { children: ReactNode }) {
   const { status, isAuthenticated } = useAuth()
@@ -78,6 +84,13 @@ export default function App() {
           <Route path="leetcode/whatsapp-templates" element={<LeetcodeWhatsappTemplatesPage />} />
         </Route>
         <Route path="/content/leetcode/:id" element={<LeetcodeVideoDetailPage />} />
+        <Route path="/messaging" element={<MessagingLayout />}>
+          <Route index element={<MessagingDestinationsPage />} />
+          <Route path="templates" element={<MessagingTemplatesPage />} />
+          <Route path="jobs" element={<MessagingJobsPage />} />
+          <Route path="deliveries" element={<MessagingDeliveriesPage />} />
+          <Route path="channels" element={<MessagingChannelsPage />} />
+        </Route>
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>

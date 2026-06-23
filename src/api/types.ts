@@ -347,3 +347,63 @@ export type ContentPromptTemplate = {
   createdAt: string
   updatedAt: string
 }
+
+export type MessageChannel = 'whatsapp' | 'telegram'
+
+export type ChannelDestination = {
+  id: string
+  channel: MessageChannel
+  externalId: string
+  name: string
+  description: string
+  responsibilities: string
+  tags: string[] | null
+  metadata: Record<string, unknown> | null
+  active: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export type MessageTemplate = {
+  id: string
+  destinationId: string | null
+  programSlug: string
+  slug: string
+  name: string
+  body: string
+  composeMode: 'static' | 'ai_assisted'
+  aiPromptHint: string
+  active: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export type ScheduledJob = {
+  id: string
+  name: string
+  destinationId: string
+  templateSlug: string
+  programAction: string
+  cronExpr: string
+  timezone: string
+  enabled: boolean
+  lastRunAt: string | null
+  nextRunAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export type MessageDelivery = {
+  id: string
+  jobId: string | null
+  destinationId: string
+  channel: MessageChannel
+  externalId: string
+  templateSlug: string
+  body: string
+  status: string
+  errorMessage: string
+  externalRef: string
+  sentAt: string
+  createdAt: string
+}
