@@ -6,6 +6,11 @@ export type Project = {
   shortDescription: string
   longDescription: string
   status: 'active' | 'paused' | 'archived'
+  intent: ProjectIntent
+  distribution: ProjectDistribution[]
+  monetization: ProjectMonetization
+  maturity: ProjectMaturity
+  visibilityGoal: ProjectVisibilityGoal
   stack: string[]
   repoUrl: string
   demoUrl: string
@@ -126,9 +131,81 @@ export type Dashboard = {
 
 export type ProjectFilters = {
   status?: string
+  intent?: string
+  monetization?: string
+  maturity?: string
+  visibilityGoal?: string
+  distribution?: string
   isPublic?: boolean
   featured?: boolean
   q?: string
+}
+
+export type ProjectIntent =
+  | 'commercial'
+  | 'academic'
+  | 'personal_tool'
+  | 'portfolio'
+  | 'hobby'
+  | 'nonprofit'
+
+export type ProjectDistribution = 'web' | 'play_store' | 'app_store' | 'desktop' | 'internal_only'
+
+export type ProjectMonetization = 'subscription' | 'one_time' | 'ads' | 'services' | 'indirect' | 'none'
+
+export type ProjectMaturity = 'idea' | 'building' | 'mvp' | 'launched' | 'maintenance' | 'sunset'
+
+export type ProjectVisibilityGoal = 'revenue' | 'job_hunting' | 'academic_credit' | 'community' | 'private'
+
+export type SocialPlatform = 'linkedin' | 'reddit' | 'twitter'
+
+export type SocialGoal = 'job_hunting' | 'revenue' | 'launch' | 'visibility' | 'academic' | 'community'
+
+export type SocialPostStatus = 'draft' | 'scheduled' | 'published' | 'cancelled'
+
+export type SocialCampaign = {
+  id: string
+  name: string
+  goal: SocialGoal
+  description: string
+  projectId: string | null
+  startDate: string | null
+  endDate: string | null
+  active: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export type PostTemplate = {
+  id: string
+  slug: string
+  name: string
+  platform: SocialPlatform | 'any'
+  goal: SocialGoal
+  body: string
+  active: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export type SocialPost = {
+  id: string
+  projectId: string | null
+  campaignId: string | null
+  platform: SocialPlatform
+  goal: SocialGoal
+  status: SocialPostStatus
+  title: string
+  body: string
+  hook: string
+  cta: string
+  templateSlug: string
+  scheduledAt: string | null
+  publishedAt: string | null
+  publishedUrl: string
+  notes: string
+  createdAt: string
+  updatedAt: string
 }
 
 export type ApiError = {

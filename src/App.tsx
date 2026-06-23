@@ -30,6 +30,10 @@ import { MessagingTemplatesPage } from './pages/messaging/MessagingTemplatesPage
 import { MessagingJobsPage } from './pages/messaging/MessagingJobsPage'
 import { MessagingDeliveriesPage } from './pages/messaging/MessagingDeliveriesPage'
 import { MessagingChannelsPage } from './pages/messaging/MessagingChannelsPage'
+import { PresenceLayout } from './pages/presence/PresenceLayout'
+import { PresencePostsPage } from './pages/presence/PresencePostsPage'
+import { PresenceCampaignsPage } from './pages/presence/PresenceCampaignsPage'
+import { PresenceTemplatesPage } from './pages/presence/PresenceTemplatesPage'
 
 function Protected({ children }: { children: ReactNode }) {
   const { status, isAuthenticated } = useAuth()
@@ -90,6 +94,11 @@ export default function App() {
           <Route path="jobs" element={<MessagingJobsPage />} />
           <Route path="deliveries" element={<MessagingDeliveriesPage />} />
           <Route path="channels" element={<MessagingChannelsPage />} />
+        </Route>
+        <Route path="/presence" element={<PresenceLayout />}>
+          <Route index element={<PresencePostsPage />} />
+          <Route path="campaigns" element={<PresenceCampaignsPage />} />
+          <Route path="templates" element={<PresenceTemplatesPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />

@@ -2,6 +2,11 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import type { Project, ProjectFilters } from '../api/types'
+import {
+  PROJECT_INTENTS,
+  PROJECT_MATURITY,
+  labelFor,
+} from '../lib/project-dimensions'
 
 export function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([])
@@ -55,6 +60,24 @@ export function ProjectsPage() {
           <option value="archived">archived</option>
         </select>
         <select
+          value={filters.intent ?? ''}
+          onChange={(e) => setFilters((f) => ({ ...f, intent: e.target.value || undefined }))}
+        >
+          <option value="">All intents</option>
+          {PROJECT_INTENTS.map((o) => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
+        <select
+          value={filters.maturity ?? ''}
+          onChange={(e) => setFilters((f) => ({ ...f, maturity: e.target.value || undefined }))}
+        >
+          <option value="">All maturity</option>
+          {PROJECT_MATURITY.map((o) => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
+        <select
           value={filters.isPublic === undefined ? '' : String(filters.isPublic)}
           onChange={(e) => {
             const v = e.target.value
@@ -93,9 +116,10 @@ export function ProjectsPage() {
             <thead>
               <tr>
                 <th>Name</th>
+                <th>Intent</th>
+                <th>Maturity</th>
                 <th>Status</th>
                 <th>Public</th>
-                <th>Featured</th>
                 <th>Stack</th>
                 <th />
               </tr>
@@ -114,11 +138,12 @@ export function ProjectsPage() {
                     <strong>{p.name}</strong>
                     <div className="muted small">{p.slug}</div>
                   </td>
+                  <td className="muted small">{labelFor(PROJECT_INTENTS, p.intent || 'portfolio')}</td>
+                  <td className="muted small">{labelFor(PROJECT_MATURITY, p.maturity || 'idea')}</td>
                   <td>
                     <span className={`badge ${p.status}`}>{p.status}</span>
                   </td>
                   <td>{p.isPublic ? 'Yes' : 'No'}</td>
-                  <td>{p.featured ? '★' : '—'}</td>
                   <td className="stack-cell">
                     {(p.stack ?? []).slice(0, 3).join(', ')}
                   </td>

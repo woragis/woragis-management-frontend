@@ -33,6 +33,9 @@ export function Layout() {
           <NavLink to="/messaging" className={({ isActive }) => (isActive ? 'active' : '')}>
             Messaging
           </NavLink>
+          <NavLink to="/presence" className={({ isActive }) => (isActive ? 'active' : '')}>
+            Presence
+          </NavLink>
           <NavLink to="/content/leetcode" className={({ isActive }) => (isActive ? 'active' : '')}>
             Content
           </NavLink>

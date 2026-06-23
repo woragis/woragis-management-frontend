@@ -31,6 +31,9 @@ import type {
   MessageTemplate,
   ScheduledJob,
   MessageDelivery,
+  SocialCampaign,
+  PostTemplate,
+  SocialPost,
 } from './types'
 
 const ADMIN_KEY_STORAGE = 'woragis_admin_key'
@@ -88,6 +91,11 @@ export const api = {
     list: (filters?: ProjectFilters) => {
       const params = new URLSearchParams()
       if (filters?.status) params.set('status', filters.status)
+      if (filters?.intent) params.set('intent', filters.intent)
+      if (filters?.monetization) params.set('monetization', filters.monetization)
+      if (filters?.maturity) params.set('maturity', filters.maturity)
+      if (filters?.visibilityGoal) params.set('visibilityGoal', filters.visibilityGoal)
+      if (filters?.distribution) params.set('distribution', filters.distribution)
       if (filters?.isPublic !== undefined) params.set('isPublic', String(filters.isPublic))
       if (filters?.featured !== undefined) params.set('featured', String(filters.featured))
       if (filters?.q) params.set('q', filters.q)
@@ -486,6 +494,81 @@ export const api = {
         const qs = params.toString()
         return request<MessageDelivery[]>(`/v1/admin/messaging/deliveries${qs ? `?${qs}` : ''}`)
       },
+    },
+  },
+  presence: {
+    campaigns: {
+      list: (filters?: { goal?: string; projectId?: string; active?: boolean }) => {
+        const params = new URLSearchParams()
+        if (filters?.goal) params.set('goal', filters.goal)
+        if (filters?.projectId) params.set('projectId', filters.projectId)
+        if (filters?.active === false) params.set('active', 'false')
+        const qs = params.toString()
+        return request<SocialCampaign[]>(`/v1/admin/presence/campaigns${qs ? `?${qs}` : ''}`)
+      },
+      create: (body: Partial<SocialCampaign> & { name: string }) =>
+        request<SocialCampaign>('/v1/admin/presence/campaigns', {
+          method: 'POST',
+          body: JSON.stringify(body),
+        }),
+      update: (id: string, body: Partial<SocialCampaign>) =>
+        request<SocialCampaign>(`/v1/admin/presence/campaigns/${id}`, {
+          method: 'PATCH',
+          body: JSON.stringify(body),
+        }),
+      delete: (id: string) => request<void>(`/v1/admin/presence/campaigns/${id}`, { method: 'DELETE' }),
+    },
+    templates: {
+      list: (filters?: { platform?: string; goal?: string; active?: boolean }) => {
+        const params = new URLSearchParams()
+        if (filters?.platform) params.set('platform', filters.platform)
+        if (filters?.goal) params.set('goal', filters.goal)
+        if (filters?.active === false) params.set('active', 'false')
+        const qs = params.toString()
+        return request<PostTemplate[]>(`/v1/admin/presence/templates${qs ? `?${qs}` : ''}`)
+      },
+      create: (body: Partial<PostTemplate> & { slug: string; name: string; body: string }) =>
+        request<PostTemplate>('/v1/admin/presence/templates', {
+          method: 'POST',
+          body: JSON.stringify(body),
+        }),
+      update: (id: string, body: Partial<PostTemplate>) =>
+        request<PostTemplate>(`/v1/admin/presence/templates/${id}`, {
+          method: 'PATCH',
+          body: JSON.stringify(body),
+        }),
+      delete: (id: string) => request<void>(`/v1/admin/presence/templates/${id}`, { method: 'DELETE' }),
+    },
+    posts: {
+      list: (filters?: {
+        platform?: string
+        goal?: string
+        status?: string
+        projectId?: string
+        campaignId?: string
+        limit?: number
+      }) => {
+        const params = new URLSearchParams()
+        if (filters?.platform) params.set('platform', filters.platform)
+        if (filters?.goal) params.set('goal', filters.goal)
+        if (filters?.status) params.set('status', filters.status)
+        if (filters?.projectId) params.set('projectId', filters.projectId)
+        if (filters?.campaignId) params.set('campaignId', filters.campaignId)
+        if (filters?.limit) params.set('limit', String(filters.limit))
+        const qs = params.toString()
+        return request<SocialPost[]>(`/v1/admin/presence/posts${qs ? `?${qs}` : ''}`)
+      },
+      create: (body: Partial<SocialPost> & { platform: string; body: string }) =>
+        request<SocialPost>('/v1/admin/presence/posts', {
+          method: 'POST',
+          body: JSON.stringify(body),
+        }),
+      update: (id: string, body: Partial<SocialPost>) =>
+        request<SocialPost>(`/v1/admin/presence/posts/${id}`, {
+          method: 'PATCH',
+          body: JSON.stringify(body),
+        }),
+      delete: (id: string) => request<void>(`/v1/admin/presence/posts/${id}`, { method: 'DELETE' }),
     },
   },
 }

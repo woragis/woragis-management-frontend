@@ -3,7 +3,14 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ImagePicker } from '../components/ImagePicker'
 import { MarkdownField } from '../components/MarkdownPreview'
 import { api } from '../api/client'
-import type { Project, ProjectDomain, ProjectEnv, ProjectLink, ProjectSecret } from '../api/types'
+import type { Project, ProjectDomain, ProjectEnv, ProjectLink, ProjectSecret, ProjectDistribution } from '../api/types'
+import {
+  PROJECT_DISTRIBUTIONS,
+  PROJECT_INTENTS,
+  PROJECT_MATURITY,
+  PROJECT_MONETIZATION,
+  PROJECT_VISIBILITY_GOALS,
+} from '../lib/project-dimensions'
 import { useConfirm } from '../context/ConfirmContext'
 import { useToast } from '../context/ToastContext'
 
@@ -20,12 +27,14 @@ export function ProjectDetailPage() {
   const [saving, setSaving] = useState(false)
   const [coverImageId, setCoverImageId] = useState<string | null>(null)
   const [longDescription, setLongDescription] = useState('')
+  const [distribution, setDistribution] = useState<ProjectDistribution[]>([])
 
   const reload = useCallback(async () => {
     const p = await api.projects.get(id)
     setProject(p)
     setCoverImageId(p.coverImageId)
     setLongDescription(p.longDescription)
+    setDistribution(p.distribution ?? [])
   }, [id])
 
   useEffect(() => {
@@ -58,6 +67,11 @@ export function ProjectDetailPage() {
           .split(',')
           .map((s) => s.trim())
           .filter(Boolean),
+        intent: String(fd.get('intent')) as Project['intent'],
+        monetization: String(fd.get('monetization')) as Project['monetization'],
+        maturity: String(fd.get('maturity')) as Project['maturity'],
+        visibilityGoal: String(fd.get('visibilityGoal')) as Project['visibilityGoal'],
+        distribution,
         isPublic: fd.get('isPublic') === 'on',
         featured: fd.get('featured') === 'on',
         coverImageId,
@@ -124,6 +138,56 @@ export function ProjectDetailPage() {
               <option value="archived">archived</option>
             </select>
           </label>
+          <h2 className="full">Strategy</h2>
+          <label>
+            Intent
+            <select name="intent" defaultValue={project.intent || 'portfolio'} key={`intent-${project.updatedAt}`}>
+              {PROJECT_INTENTS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Monetization
+            <select name="monetization" defaultValue={project.monetization || 'none'} key={`mon-${project.updatedAt}`}>
+              {PROJECT_MONETIZATION.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Maturity
+            <select name="maturity" defaultValue={project.maturity || 'idea'} key={`mat-${project.updatedAt}`}>
+              {PROJECT_MATURITY.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Visibility goal
+            <select name="visibilityGoal" defaultValue={project.visibilityGoal || 'private'} key={`vis-${project.updatedAt}`}>
+              {PROJECT_VISIBILITY_GOALS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+          </label>
+          <fieldset className="full checkbox-group">
+            <legend>Distribution channels</legend>
+            {PROJECT_DISTRIBUTIONS.map((o) => (
+              <label key={o.value} className="checkbox inline">
+                <input
+                  type="checkbox"
+                  checked={distribution.includes(o.value)}
+                  onChange={(e) => {
+                    setDistribution((prev) =>
+                      e.target.checked ? [...prev, o.value] : prev.filter((d) => d !== o.value),
+                    )
+                  }}
+                />
+                {o.label}
+              </label>
+            ))}
+          </fieldset>
           <label>
             Display order
             <input name="displayOrder" type="number" defaultValue={project.displayOrder} />
@@ -229,6 +293,8 @@ function LinksTab({ projectId, links, onChange }: { projectId: string; links: Pr
             <option value="staging">staging</option>
             <option value="admin">admin</option>
             <option value="api">api</option>
+            <option value="play_store">play_store</option>
+            <option value="app_store">app_store</option>
             <option value="other">other</option>
           </select>
         </label>
