@@ -37,6 +37,11 @@ import type {
   PostTemplate,
   SocialPost,
   PresenceSettings,
+  Contact,
+  ContactInteraction,
+  ContactFilters,
+  ContactFinance,
+  AgentPersonality,
 } from './types'
 
 const ADMIN_KEY_STORAGE = 'woragis_admin_key'
@@ -437,6 +442,13 @@ export const api = {
           unchanged: number
           groups: Array<{ jid: string; name: string; id?: string; created?: boolean; updated?: boolean }>
         }>('/v1/admin/messaging/destinations/sync-whatsapp', { method: 'POST' }),
+      syncTelegram: () =>
+        request<{
+          created: number
+          updated: number
+          unchanged: number
+          chats: Array<{ chatId: string; name: string; id?: string; created?: boolean; updated?: boolean }>
+        }>('/v1/admin/messaging/destinations/sync-telegram', { method: 'POST' }),
     },
     templates: {
       list: (filters?: { programSlug?: string; destinationId?: string; active?: boolean }) => {
@@ -608,6 +620,59 @@ export const api = {
           method: 'PATCH',
           body: JSON.stringify(body),
         }),
+    },
+  },
+  contacts: {
+    list: (filters?: ContactFilters) => {
+      const params = new URLSearchParams()
+      if (filters?.q) params.set('q', filters.q)
+      if (filters?.relationship) params.set('relationship', filters.relationship)
+      if (filters?.organization) params.set('organization', filters.organization)
+      if (filters?.stage) params.set('stage', filters.stage)
+      if (filters?.projectId) params.set('projectId', filters.projectId)
+      if (filters?.active === false) params.set('active', 'false')
+      const qs = params.toString()
+      return request<Contact[]>(`/v1/admin/contacts${qs ? `?${qs}` : ''}`)
+    },
+    get: (id: string) => request<Contact>(`/v1/admin/contacts/${id}`),
+    create: (body: Partial<Contact> & { name: string }) =>
+      request<Contact>('/v1/admin/contacts', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    update: (id: string, body: Partial<Contact>) =>
+      request<Contact>(`/v1/admin/contacts/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+      }),
+    delete: (id: string) => request<void>(`/v1/admin/contacts/${id}`, { method: 'DELETE' }),
+    listInteractions: (id: string) =>
+      request<ContactInteraction[]>(`/v1/admin/contacts/${id}/interactions`),
+    createInteraction: (
+      id: string,
+      body: {
+        type: string
+        channel: string
+        summary: string
+        happenedAt: string
+      },
+    ) =>
+      request<ContactInteraction>(`/v1/admin/contacts/${id}/interactions`, {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    finance: (id: string) => request<ContactFinance>(`/v1/admin/contacts/${id}/finance`),
+  },
+  agent: {
+    personality: {
+      get: () => request<AgentPersonality>('/v1/admin/agent/personality'),
+      update: (body: Partial<AgentPersonality>) =>
+        request<AgentPersonality>('/v1/admin/agent/personality', {
+          method: 'PATCH',
+          body: JSON.stringify(body),
+        }),
+      reset: () =>
+        request<AgentPersonality>('/v1/admin/agent/personality/reset', { method: 'POST' }),
     },
   },
 }

@@ -125,6 +125,8 @@ export type Dashboard = {
   publicProjectCount: number
   activeProjectCount: number
   mediaCount: number
+  byMaturity: Array<{ key: string; count: number }>
+  byIntent: Array<{ key: string; count: number }>
   secretsExpiringSoon: ProjectSecret[]
   domainsExpiringSoon: ProjectDomain[]
 }
@@ -318,6 +320,7 @@ export type FinanceDashboard = {
   activeIncomeCount: number
   activeExpenseCount: number
   upcomingInvoices: Invoice[]
+  upcomingExpenses: Expense[]
 }
 
 export type MonthlySummary = {
@@ -511,4 +514,74 @@ export type MessageDelivery = {
   externalRef: string
   sentAt: string
   createdAt: string
+}
+
+export type ContactRelationship = 'lead' | 'prospect' | 'client' | 'investor' | 'partner' | 'other'
+
+export type ContactStage = 'cold' | 'warm' | 'active' | 'paused' | 'churned'
+
+export type Contact = {
+  id: string
+  name: string
+  displayName: string
+  email: string
+  phone: string
+  telegram: string
+  whatsapp: string
+  organization: string
+  roleTitle: string
+  relationship: ContactRelationship
+  stage: ContactStage
+  source: string
+  notes: string
+  tags: string[] | null
+  projectId: string | null
+  lastContactedAt: string | null
+  nextFollowUpAt: string | null
+  active: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export type ContactInteraction = {
+  id: string
+  contactId: string
+  type: 'call' | 'meeting' | 'message' | 'email' | 'note'
+  channel: 'telegram' | 'whatsapp' | 'phone' | 'in_person' | 'other'
+  summary: string
+  happenedAt: string
+  createdAt: string
+}
+
+export type ContactFilters = {
+  q?: string
+  relationship?: string
+  organization?: string
+  stage?: string
+  projectId?: string
+  active?: boolean
+}
+
+export type ContactFinance = {
+  contactId: string
+  incomeSources: IncomeSource[]
+  transactions: Transaction[]
+  incomeCents: number
+  expenseCents: number
+}
+
+export type AgentPersonality = {
+  id: string
+  assistantName: string
+  assistantNameSetAt?: string | null
+  greetingMorning: string
+  greetingAfternoon: string
+  greetingEvening: string
+  greetingEnabled: boolean
+  systemPromptExtra: string
+  voiceId: string
+  language: string
+  timezone: string
+  createdAt: string
+  updatedAt: string
 }

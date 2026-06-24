@@ -35,6 +35,9 @@ import { PresencePostsPage } from './pages/presence/PresencePostsPage'
 import { PresenceCampaignsPage } from './pages/presence/PresenceCampaignsPage'
 import { PresenceTemplatesPage } from './pages/presence/PresenceTemplatesPage'
 import { PresenceSettingsPage } from './pages/presence/PresenceSettingsPage'
+import { ContactsPage } from './pages/contacts/ContactsPage'
+import { ContactDetailPage } from './pages/contacts/ContactDetailPage'
+import { AgentPersonalityPage } from './pages/agent/AgentPersonalityPage'
 
 function Protected({ children }: { children: ReactNode }) {
   const { status, isAuthenticated } = useAuth()
@@ -102,6 +105,9 @@ export default function App() {
           <Route path="templates" element={<PresenceTemplatesPage />} />
           <Route path="settings" element={<PresenceSettingsPage />} />
         </Route>
+        <Route path="/contacts" element={<ContactsPage />} />
+        <Route path="/contacts/:id" element={<ContactDetailPage />} />
+        <Route path="/agent/personality" element={<AgentPersonalityPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>

@@ -36,6 +36,12 @@ export function Layout() {
           <NavLink to="/presence" className={({ isActive }) => (isActive ? 'active' : '')}>
             Presence
           </NavLink>
+          <NavLink to="/contacts" className={({ isActive }) => (isActive ? 'active' : '')}>
+            Contacts
+          </NavLink>
+          <NavLink to="/agent/personality" className={({ isActive }) => (isActive ? 'active' : '')}>
+            Agent
+          </NavLink>
           <NavLink to="/content/leetcode" className={({ isActive }) => (isActive ? 'active' : '')}>
             Content
           </NavLink>
