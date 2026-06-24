@@ -106,6 +106,22 @@ export function PresencePostsPage() {
     }
   }
 
+  async function markPublished(row: SocialPost) {
+    const url = row.publishedUrl?.trim() || window.prompt('URL da postagem publicada (obrigatório):', '')?.trim()
+    if (!url) {
+      toast('Informe a URL da postagem publicada.', 'error')
+      return
+    }
+    const updated: SocialPost = {
+      ...row,
+      publishedUrl: url,
+      status: 'published',
+      publishedAt: row.publishedAt ?? new Date().toISOString(),
+    }
+    updateLocal(row.id, updated)
+    await save(updated)
+  }
+
   async function save(row: SocialPost) {
     setSavingId(row.id)
     try {
@@ -268,6 +284,14 @@ export function PresencePostsPage() {
                     {row.reminderSentAt ? ' · reminder sent' : ''}
                     {row.projectId ? ` · ${projectName(row.projectId)}` : ''}
                     {row.campaignId ? ` · ${campaignName(row.campaignId)}` : ''}
+                    {row.status === 'published' && row.publishedUrl ? (
+                      <>
+                        {' · '}
+                        <a href={row.publishedUrl} target="_blank" rel="noreferrer">
+                          View post
+                        </a>
+                      </>
+                    ) : null}
                   </p>
                   <label>
                     Title
@@ -296,7 +320,7 @@ export function PresencePostsPage() {
                       <button
                         type="button"
                         className="btn ghost"
-                        onClick={() => updateLocal(row.id, { status: 'published', publishedAt: new Date().toISOString() })}
+                        onClick={() => markPublished(row)}
                       >
                         Mark published
                       </button>
