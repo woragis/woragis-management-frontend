@@ -18,7 +18,7 @@ export function MessagingDestinationsPage() {
   const [loading, setLoading] = useState(true)
   const [channelFilter, setChannelFilter] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [syncing, setSyncing] = useState(false)
+  const [syncing, setSyncing] = useState<'whatsapp' | 'telegram' | null>(null)
 
   const reload = useCallback(async () => {
     const data = await api.messaging.destinations.list({
@@ -34,7 +34,7 @@ export function MessagingDestinationsPage() {
   }, [reload, toast])
 
   async function syncWhatsApp() {
-    setSyncing(true)
+    setSyncing('whatsapp')
     try {
       const res = await api.messaging.destinations.syncWhatsApp()
       await reload()
@@ -45,7 +45,23 @@ export function MessagingDestinationsPage() {
     } catch (err) {
       toast(err instanceof Error ? err.message : 'Sync failed', 'error')
     } finally {
-      setSyncing(false)
+      setSyncing(null)
+    }
+  }
+
+  async function syncTelegram() {
+    setSyncing('telegram')
+    try {
+      const res = await api.messaging.destinations.syncTelegram()
+      await reload()
+      toast(
+        `Synced: ${res.created} created, ${res.updated} updated, ${res.unchanged} unchanged.`,
+        'success',
+      )
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'Sync failed', 'error')
+    } finally {
+      setSyncing(null)
     }
   }
 
@@ -170,10 +186,18 @@ export function MessagingDestinationsPage() {
           <button
             type="button"
             className="btn ghost"
-            disabled={syncing}
+            disabled={syncing !== null}
             onClick={() => syncWhatsApp()}
           >
-            {syncing ? 'Syncing…' : 'Sync WhatsApp groups'}
+            {syncing === 'whatsapp' ? 'Syncing…' : 'Sync WhatsApp groups'}
+          </button>
+          <button
+            type="button"
+            className="btn ghost"
+            disabled={syncing !== null}
+            onClick={() => syncTelegram()}
+          >
+            {syncing === 'telegram' ? 'Syncing…' : 'Sync Telegram chats'}
           </button>
         </div>
         {rows.length === 0 ? (
