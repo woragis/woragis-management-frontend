@@ -28,8 +28,61 @@ export function FinanceDashboardPage() {
   if (error) return <p className="error">{error}</p>
   if (!dashboard || !summary) return <p className="muted">Loading…</p>
 
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const overdueInvoices = dashboard.upcomingInvoices.filter((inv) => {
+    const due = new Date(inv.dueDate)
+    due.setHours(0, 0, 0, 0)
+    return due < today && inv.status !== 'paid'
+  })
+  const dueSoonExpenses = (dashboard.upcomingExpenses ?? []).filter((exp) => {
+    if (!exp.dueDate) return false
+    const due = new Date(exp.dueDate)
+    due.setHours(0, 0, 0, 0)
+    return due >= today
+  })
+
   return (
     <>
+      {(overdueInvoices.length > 0 || dueSoonExpenses.length > 0) && (
+        <section className="card" style={{ marginBottom: '1rem', borderColor: 'var(--danger, #c44)' }}>
+          <h2>Due date alerts</h2>
+          {overdueInvoices.length > 0 && (
+            <>
+              <p className="muted small">Overdue invoices</p>
+              <ul className="item-list">
+                {overdueInvoices.map((inv) => (
+                  <li key={inv.id}>
+                    <strong>{inv.name}</strong>
+                    <div className="muted small error">
+                      <Link to={`/finance/invoices/${inv.id}`}>{formatBRL(inv.totalCents - inv.paidCents)}</Link>
+                      {' · due '}
+                      {new Date(inv.dueDate).toLocaleDateString('pt-BR')}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+          {dueSoonExpenses.length > 0 && (
+            <>
+              <p className="muted small">Upcoming one-time expenses (30 days)</p>
+              <ul className="item-list">
+                {dueSoonExpenses.map((exp) => (
+                  <li key={exp.id}>
+                    <strong>{exp.name}</strong>
+                    <div className="muted small">
+                      <Link to="/finance/expenses">{formatBRL(exp.amountCents)}</Link>
+                      {exp.dueDate && ` · ${new Date(exp.dueDate).toLocaleDateString('pt-BR')}`}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </section>
+      )}
+
       <div className="stat-grid">
         <div className="card stat-card">
           <span className="stat-value success">{formatBRL(dashboard.monthIncomeCents)}</span>
