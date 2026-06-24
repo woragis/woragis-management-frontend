@@ -190,7 +190,7 @@ export function MessagingJobsPage() {
                     <div>{r.timezone}</div>
                   </td>
                   <td className="muted small">{formatWhen(r.nextRunAt)}</td>
-                  <td>{r.enabled ? 'Enabled' : 'Disabled'}</td>
+                  <td>{r.enabled ? 'Enabled' : 'Disabled'}{r.failureCount > 0 ? ` (${r.failureCount} fails)` : ''}</td>
                   <td className="row-actions">
                     <button type="button" className="btn ghost" onClick={() => toggleEnabled(r)}>
                       {r.enabled ? 'Disable' : 'Enable'}

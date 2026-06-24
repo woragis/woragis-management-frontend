@@ -488,6 +488,7 @@ export type ScheduledJob = {
   templateSlug: string
   programAction: string
   dataSource: MessagingDataSource
+  failureCount: number
   cronExpr: string
   timezone: string
   enabled: boolean

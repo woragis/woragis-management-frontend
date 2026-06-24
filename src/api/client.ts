@@ -430,6 +430,13 @@ export const api = {
         }),
       delete: (id: string) =>
         request<void>(`/v1/admin/messaging/destinations/${id}`, { method: 'DELETE' }),
+      syncWhatsApp: () =>
+        request<{
+          created: number
+          updated: number
+          unchanged: number
+          groups: Array<{ jid: string; name: string; id?: string; created?: boolean; updated?: boolean }>
+        }>('/v1/admin/messaging/destinations/sync-whatsapp', { method: 'POST' }),
     },
     templates: {
       list: (filters?: { programSlug?: string; destinationId?: string; active?: boolean }) => {

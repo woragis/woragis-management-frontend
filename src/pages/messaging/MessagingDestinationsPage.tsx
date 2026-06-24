@@ -18,6 +18,7 @@ export function MessagingDestinationsPage() {
   const [loading, setLoading] = useState(true)
   const [channelFilter, setChannelFilter] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [syncing, setSyncing] = useState(false)
 
   const reload = useCallback(async () => {
     const data = await api.messaging.destinations.list({
@@ -31,6 +32,22 @@ export function MessagingDestinationsPage() {
       .catch((e) => toast(e instanceof Error ? e.message : 'Failed to load', 'error'))
       .finally(() => setLoading(false))
   }, [reload, toast])
+
+  async function syncWhatsApp() {
+    setSyncing(true)
+    try {
+      const res = await api.messaging.destinations.syncWhatsApp()
+      await reload()
+      toast(
+        `Synced: ${res.created} created, ${res.updated} updated, ${res.unchanged} unchanged.`,
+        'success',
+      )
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'Sync failed', 'error')
+    } finally {
+      setSyncing(false)
+    }
+  }
 
   async function onCreate(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -150,6 +167,14 @@ export function MessagingDestinationsPage() {
               <option value="telegram">Telegram</option>
             </select>
           </label>
+          <button
+            type="button"
+            className="btn ghost"
+            disabled={syncing}
+            onClick={() => syncWhatsApp()}
+          >
+            {syncing ? 'Syncing…' : 'Sync WhatsApp groups'}
+          </button>
         </div>
         {rows.length === 0 ? (
           <p className="muted">No destinations yet. Create one to target groups or chats.</p>
