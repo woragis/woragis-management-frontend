@@ -1,6 +1,6 @@
 import { type FormEvent, useCallback, useEffect, useState } from 'react'
 import { api } from '../../api/client'
-import type { ChannelDestination, MessageTemplate } from '../../api/types'
+import type { ChannelDestination, MessageTemplate, MessagingCatalogField } from '../../api/types'
 import { useConfirm } from '../../context/ConfirmContext'
 import { useToast } from '../../context/ToastContext'
 
@@ -11,6 +11,8 @@ export function MessagingTemplatesPage() {
   const [destinations, setDestinations] = useState<ChannelDestination[]>([])
   const [loading, setLoading] = useState(true)
   const [savingId, setSavingId] = useState<string | null>(null)
+  const [preview, setPreview] = useState<{ id: string; text: string } | null>(null)
+  const [catalog, setCatalog] = useState<MessagingCatalogField[]>([])
 
   const reload = useCallback(async () => {
     const [templates, dests] = await Promise.all([
@@ -36,19 +38,51 @@ export function MessagingTemplatesPage() {
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)))
   }
 
+  async function loadCatalog(program: string) {
+    try {
+      const fields = await api.messaging.catalog(program || 'custom')
+      setCatalog(fields)
+    } catch {
+      setCatalog([])
+    }
+  }
+
+  async function previewRow(row: MessageTemplate) {
+    setPreview({ id: row.id, text: 'Loading…' })
+    try {
+      const res = await api.messaging.templates.preview({
+        templateId: row.id,
+        programAction: row.programSlug === 'leetcode' ? 'problem' : undefined,
+        dataSource: row.programSlug ? { program: row.programSlug } : undefined,
+      })
+      const text = res.skipped ? `Skipped: ${res.skipReason ?? 'no content'}` : res.body
+      setPreview({ id: row.id, text })
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'Preview failed', 'error')
+      setPreview(null)
+    }
+  }
+
   async function onCreate(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
     const destRaw = String(fd.get('destinationId') || '')
+    const programSlug = String(fd.get('programSlug') || 'custom')
+    let bindings: Record<string, string> = {}
+    const bindingsRaw = String(fd.get('bindingsJson') || '').trim()
+    if (bindingsRaw) {
+      bindings = JSON.parse(bindingsRaw) as Record<string, string>
+    }
     try {
       await api.messaging.templates.create({
         destinationId: destRaw || null,
-        programSlug: String(fd.get('programSlug') || 'custom'),
+        programSlug,
         slug: String(fd.get('slug')),
         name: String(fd.get('name')),
         body: String(fd.get('body')),
         composeMode: String(fd.get('composeMode') || 'static'),
         aiPromptHint: String(fd.get('aiPromptHint') || ''),
+        bindings,
         active: true,
       })
       e.currentTarget.reset()
@@ -70,6 +104,7 @@ export function MessagingTemplatesPage() {
         body: row.body,
         composeMode: row.composeMode,
         aiPromptHint: row.aiPromptHint,
+        bindings: row.bindings ?? {},
         active: row.active,
       })
       setRows((prev) => prev.map((r) => (r.id === row.id ? updated : r)))
@@ -119,7 +154,12 @@ export function MessagingTemplatesPage() {
         </label>
         <label>
           Program
-          <input name="programSlug" defaultValue="custom" placeholder="custom, leetcode" />
+          <input
+            name="programSlug"
+            defaultValue="custom"
+            placeholder="custom, leetcode, project"
+            onBlur={(e) => loadCatalog(e.target.value)}
+          />
         </label>
         <label>
           Destination (optional)
@@ -145,7 +185,16 @@ export function MessagingTemplatesPage() {
         </label>
         <label className="full">
           Body
-          <textarea name="body" rows={6} required placeholder="Hello {{name}}!" />
+          <textarea name="body" rows={6} required placeholder="Hello {{problemTitle}}!" />
+        </label>
+        {catalog.length > 0 ? (
+          <p className="muted small full">
+            Available fields: {catalog.map((f) => `{{${f.key}}}`).join(', ')}
+          </p>
+        ) : null}
+        <label className="full">
+          Bindings (JSON, optional)
+          <textarea name="bindingsJson" rows={3} placeholder='{"problemTitle":"leetcode.problemTitle"}' />
         </label>
         <div className="form-actions full">
           <button type="submit" className="btn primary">
@@ -218,6 +267,36 @@ export function MessagingTemplatesPage() {
                 </select>
               </label>
               <label>
+                Program
+                <input
+                  value={row.programSlug}
+                  onChange={(e) => {
+                    updateLocal(row.id, { programSlug: e.target.value })
+                    loadCatalog(e.target.value)
+                  }}
+                />
+              </label>
+              <label className="full">
+                Bindings (JSON)
+                <textarea
+                  rows={3}
+                  value={JSON.stringify(row.bindings ?? {}, null, 2)}
+                  onChange={(e) => {
+                    try {
+                      const parsed = JSON.parse(e.target.value || '{}') as Record<string, string>
+                      updateLocal(row.id, { bindings: parsed })
+                    } catch {
+                      /* ignore while typing invalid JSON */
+                    }
+                  }}
+                />
+              </label>
+              {catalog.length > 0 ? (
+                <p className="muted small full">
+                  Fields: {catalog.map((f) => `{{${f.key}}}`).join(', ')}
+                </p>
+              ) : null}
+              <label>
                 Body
                 <textarea
                   rows={10}
@@ -228,6 +307,13 @@ export function MessagingTemplatesPage() {
               <div className="form-actions">
                 <button
                   type="button"
+                  className="btn ghost"
+                  onClick={() => previewRow(row)}
+                >
+                  Preview
+                </button>
+                <button
+                  type="button"
                   className="btn primary"
                   disabled={savingId === row.id}
                   onClick={() => save(row)}
@@ -235,6 +321,11 @@ export function MessagingTemplatesPage() {
                   {savingId === row.id ? 'Saving…' : 'Save'}
                 </button>
               </div>
+              {preview?.id === row.id ? (
+                <pre className="muted small" style={{ whiteSpace: 'pre-wrap' }}>
+                  {preview.text}
+                </pre>
+              ) : null}
             </section>
           ))
         )}

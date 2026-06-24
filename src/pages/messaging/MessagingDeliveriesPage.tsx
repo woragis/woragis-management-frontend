@@ -7,6 +7,12 @@ function formatWhen(iso: string) {
   return new Date(iso).toLocaleString()
 }
 
+function statusClass(status: string) {
+  if (status === 'sent') return 'success'
+  if (status === 'skipped') return 'muted'
+  return 'warning'
+}
+
 function previewBody(body: string) {
   const trimmed = body.trim()
   if (trimmed.length <= 120) return trimmed
@@ -82,7 +88,7 @@ export function MessagingDeliveriesPage() {
                 <td>{destinationName(r.destinationId)}</td>
                 <td>{r.channel}</td>
                 <td>
-                  <span className={r.status === 'sent' ? 'success' : 'warning'}>{r.status}</span>
+                  <span className={statusClass(r.status)}>{r.status}</span>
                   {r.errorMessage ? (
                     <div className="muted small">{r.errorMessage}</div>
                   ) : null}

@@ -40,12 +40,22 @@ export function MessagingJobsPage() {
     const fd = new FormData(e.currentTarget)
     const templateSlug = String(fd.get('templateSlug') || '').trim()
     const programAction = String(fd.get('programAction') || '').trim()
+    const dataProgram = String(fd.get('dataProgram') || '').trim()
+    const projectId = String(fd.get('projectId') || '').trim()
+    const dataSource =
+      dataProgram || projectId
+        ? {
+            ...(dataProgram ? { program: dataProgram } : {}),
+            ...(projectId ? { projectId } : {}),
+          }
+        : undefined
     try {
       await api.messaging.jobs.create({
         name: String(fd.get('name')),
         destinationId: String(fd.get('destinationId')),
         templateSlug,
         programAction,
+        dataSource,
         cronExpr: String(fd.get('cronExpr')),
         timezone: String(fd.get('timezone') || 'America/Sao_Paulo'),
         enabled: fd.get('enabled') === 'on',
@@ -116,6 +126,14 @@ export function MessagingJobsPage() {
           </select>
         </label>
         <label>
+          Data source program
+          <input name="dataProgram" placeholder="leetcode, project" />
+        </label>
+        <label>
+          Project ID (for project program)
+          <input name="projectId" placeholder="uuid" />
+        </label>
+        <label>
           Cron expression
           <input name="cronExpr" required placeholder="0 9 * * *" />
         </label>
@@ -163,6 +181,9 @@ export function MessagingJobsPage() {
                   <td>{destinationName(r.destinationId)}</td>
                   <td className="muted small">
                     {r.programAction || r.templateSlug || '—'}
+                    {r.dataSource?.program ? (
+                      <div>data: {r.dataSource.program}</div>
+                    ) : null}
                   </td>
                   <td className="muted small">
                     <code>{r.cronExpr}</code>

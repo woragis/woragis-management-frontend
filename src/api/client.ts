@@ -29,6 +29,8 @@ import type {
   WhatsappWorkerStatus,
   ChannelDestination,
   MessageTemplate,
+  MessagingCatalogField,
+  MessagingDataSource,
   ScheduledJob,
   MessageDelivery,
   SocialCampaign,
@@ -447,6 +449,7 @@ export const api = {
         body: string
         composeMode?: string
         aiPromptHint?: string
+        bindings?: Record<string, string>
         active?: boolean
       }) =>
         request<MessageTemplate>('/v1/admin/messaging/templates', {
@@ -460,6 +463,25 @@ export const api = {
         }),
       delete: (id: string) =>
         request<void>(`/v1/admin/messaging/templates/${id}`, { method: 'DELETE' }),
+      preview: (body: {
+        templateId: string
+        programAction?: string
+        dataSource?: MessagingDataSource
+      }) =>
+        request<{
+          body: string
+          data?: Record<string, string>
+          skipped?: boolean
+          skipReason?: string
+          externalRef?: string
+        }>('/v1/admin/messaging/templates/preview', {
+          method: 'POST',
+          body: JSON.stringify(body),
+        }),
+    },
+    catalog: (program?: string) => {
+      const qs = program ? `?program=${encodeURIComponent(program)}` : ''
+      return request<MessagingCatalogField[]>(`/v1/admin/messaging/catalog${qs}`)
     },
     jobs: {
       list: (enabledOnly?: boolean) => {
@@ -472,6 +494,7 @@ export const api = {
         destinationId: string
         templateSlug?: string
         programAction?: string
+        dataSource?: MessagingDataSource
         cronExpr: string
         timezone?: string
         enabled?: boolean

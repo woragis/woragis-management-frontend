@@ -451,6 +451,13 @@ export type ChannelDestination = {
   updatedAt: string
 }
 
+export type MessagingCatalogField = {
+  key: string
+  label: string
+  binding: string
+  description?: string
+}
+
 export type MessageTemplate = {
   id: string
   destinationId: string | null
@@ -460,9 +467,18 @@ export type MessageTemplate = {
   body: string
   composeMode: 'static' | 'ai_assisted'
   aiPromptHint: string
+  bindings: Record<string, string>
   active: boolean
   createdAt: string
   updatedAt: string
+}
+
+export type MessagingDataSource = {
+  program?: string
+  resolver?: string
+  date?: string
+  projectId?: string
+  projectSlug?: string
 }
 
 export type ScheduledJob = {
@@ -471,6 +487,7 @@ export type ScheduledJob = {
   destinationId: string
   templateSlug: string
   programAction: string
+  dataSource: MessagingDataSource
   cronExpr: string
   timezone: string
   enabled: boolean
@@ -488,7 +505,7 @@ export type MessageDelivery = {
   externalId: string
   templateSlug: string
   body: string
-  status: string
+  status: 'sent' | 'failed' | 'skipped' | string
   errorMessage: string
   externalRef: string
   sentAt: string
