@@ -3,6 +3,33 @@ import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import type { Dashboard } from '../api/types'
 
+const MATURITY_LABELS: Record<string, string> = {
+  idea: 'Idea',
+  building: 'Building',
+  mvp: 'MVP',
+  launched: 'Launched',
+  maintenance: 'Maintenance',
+  sunset: 'Sunset',
+}
+
+const INTENT_LABELS: Record<string, string> = {
+  commercial: 'Commercial',
+  academic: 'Academic',
+  personal_tool: 'Personal tool',
+  portfolio: 'Portfolio',
+  hobby: 'Hobby',
+  nonprofit: 'Nonprofit',
+}
+
+function filterLink(params: Record<string, string | undefined>): string {
+  const q = new URLSearchParams()
+  for (const [k, v] of Object.entries(params)) {
+    if (v) q.set(k, v)
+  }
+  const s = q.toString()
+  return s ? `/projects?${s}` : '/projects'
+}
+
 export function DashboardPage() {
   const [data, setData] = useState<Dashboard | null>(null)
   const [error, setError] = useState('')
@@ -46,6 +73,67 @@ export function DashboardPage() {
           <span className="stat-value">{data.mediaCount}</span>
           <span className="muted">Media assets</span>
         </div>
+      </div>
+
+      <div className="dashboard-grid">
+        <section className="card">
+          <h2>By maturity</h2>
+          {(data.byMaturity ?? []).length === 0 ? (
+            <p className="muted">No projects yet.</p>
+          ) : (
+            <ul className="item-list">
+              {(data.byMaturity ?? []).map((row) => (
+                <li key={row.key}>
+                  <Link to={filterLink({ maturity: row.key })}>
+                    <strong>{MATURITY_LABELS[row.key] ?? row.key}</strong>
+                    <span className="muted small"> · {row.count}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <section className="card">
+          <h2>By intent</h2>
+          {(data.byIntent ?? []).length === 0 ? (
+            <p className="muted">No projects yet.</p>
+          ) : (
+            <ul className="item-list">
+              {(data.byIntent ?? []).map((row) => (
+                <li key={row.key}>
+                  <Link to={filterLink({ intent: row.key })}>
+                    <strong>{INTENT_LABELS[row.key] ?? row.key}</strong>
+                    <span className="muted small"> · {row.count}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
+
+      <div className="dashboard-grid">
+        <section className="card">
+          <h2>Quick filters</h2>
+          <div className="row-actions" style={{ flexWrap: 'wrap', gap: '0.5rem' }}>
+            <Link to={filterLink({ status: 'active' })} className="btn ghost">
+              Active projects
+            </Link>
+            <Link to={filterLink({ isPublic: 'true' })} className="btn ghost">
+              Public
+            </Link>
+            <Link to={filterLink({ featured: 'true' })} className="btn ghost">
+              Featured
+            </Link>
+            <Link to={filterLink({ maturity: 'mvp' })} className="btn ghost">
+              MVPs
+            </Link>
+            <Link to={filterLink({ maturity: 'launched' })} className="btn ghost">
+              Launched
+            </Link>
+          </div>
+        </section>
       </div>
 
       <div className="dashboard-grid">
