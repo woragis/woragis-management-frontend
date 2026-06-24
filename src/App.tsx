@@ -34,6 +34,7 @@ import { PresenceLayout } from './pages/presence/PresenceLayout'
 import { PresencePostsPage } from './pages/presence/PresencePostsPage'
 import { PresenceCampaignsPage } from './pages/presence/PresenceCampaignsPage'
 import { PresenceTemplatesPage } from './pages/presence/PresenceTemplatesPage'
+import { PresenceSettingsPage } from './pages/presence/PresenceSettingsPage'
 
 function Protected({ children }: { children: ReactNode }) {
   const { status, isAuthenticated } = useAuth()
@@ -99,6 +100,7 @@ export default function App() {
           <Route index element={<PresencePostsPage />} />
           <Route path="campaigns" element={<PresenceCampaignsPage />} />
           <Route path="templates" element={<PresenceTemplatesPage />} />
+          <Route path="settings" element={<PresenceSettingsPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />

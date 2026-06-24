@@ -34,6 +34,7 @@ import type {
   SocialCampaign,
   PostTemplate,
   SocialPost,
+  PresenceSettings,
 } from './types'
 
 const ADMIN_KEY_STORAGE = 'woragis_admin_key'
@@ -569,6 +570,14 @@ export const api = {
           body: JSON.stringify(body),
         }),
       delete: (id: string) => request<void>(`/v1/admin/presence/posts/${id}`, { method: 'DELETE' }),
+    },
+    settings: {
+      get: () => request<PresenceSettings>('/v1/admin/presence/settings'),
+      update: (body: Partial<PresenceSettings>) =>
+        request<PresenceSettings>('/v1/admin/presence/settings', {
+          method: 'PATCH',
+          body: JSON.stringify(body),
+        }),
     },
   },
 }

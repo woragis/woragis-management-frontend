@@ -265,6 +265,7 @@ export function PresencePostsPage() {
                   <p className="muted small">
                     {labelFor(SOCIAL_PLATFORMS, row.platform)} · {labelFor(SOCIAL_GOALS, row.goal)} ·{' '}
                     {labelFor(SOCIAL_POST_STATUSES, row.status)}
+                    {row.reminderSentAt ? ' · reminder sent' : ''}
                     {row.projectId ? ` · ${projectName(row.projectId)}` : ''}
                     {row.campaignId ? ` · ${campaignName(row.campaignId)}` : ''}
                   </p>
@@ -291,6 +292,15 @@ export function PresencePostsPage() {
                   </label>
                   <div className="form-actions">
                     <button type="button" className="btn ghost" onClick={() => handleCopy(full)}>Copy</button>
+                    {row.status !== 'published' && (
+                      <button
+                        type="button"
+                        className="btn ghost"
+                        onClick={() => updateLocal(row.id, { status: 'published', publishedAt: new Date().toISOString() })}
+                      >
+                        Mark published
+                      </button>
+                    )}
                     <button type="button" className="btn primary" disabled={savingId === row.id} onClick={() => save(row)}>
                       {savingId === row.id ? 'Saving…' : 'Save'}
                     </button>

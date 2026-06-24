@@ -201,9 +201,19 @@ export type SocialPost = {
   cta: string
   templateSlug: string
   scheduledAt: string | null
+  reminderSentAt: string | null
+  notifyDestinationId: string | null
   publishedAt: string | null
   publishedUrl: string
   notes: string
+  createdAt: string
+  updatedAt: string
+}
+
+export type PresenceSettings = {
+  id: string
+  remindersEnabled: boolean
+  defaultDestinationId: string | null
   createdAt: string
   updatedAt: string
 }

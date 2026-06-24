@@ -4,6 +4,7 @@ const links = [
   { to: '/presence', end: true, label: 'Posts' },
   { to: '/presence/campaigns', label: 'Campaigns' },
   { to: '/presence/templates', label: 'Templates' },
+  { to: '/presence/settings', label: 'Settings' },
 ]
 
 export function PresenceLayout() {
