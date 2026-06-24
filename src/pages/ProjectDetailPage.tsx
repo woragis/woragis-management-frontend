@@ -11,10 +11,11 @@ import {
   PROJECT_MONETIZATION,
   PROJECT_VISIBILITY_GOALS,
 } from '../lib/project-dimensions'
+import { ProjectPresenceTab } from './projects/ProjectPresenceTab'
 import { useConfirm } from '../context/ConfirmContext'
 import { useToast } from '../context/ToastContext'
 
-type Tab = 'general' | 'links' | 'domains' | 'secrets' | 'env' | 'gallery'
+type Tab = 'general' | 'links' | 'domains' | 'secrets' | 'env' | 'gallery' | 'presence'
 
 export function ProjectDetailPage() {
   const { id = '' } = useParams()
@@ -113,7 +114,7 @@ export function ProjectDetailPage() {
       </header>
 
       <div className="tabs">
-        {(['general', 'links', 'domains', 'secrets', 'env', 'gallery'] as Tab[]).map((t) => (
+        {(['general', 'links', 'domains', 'secrets', 'env', 'gallery', 'presence'] as Tab[]).map((t) => (
           <button key={t} type="button" className={tab === t ? 'active' : ''} onClick={() => setTab(t)}>
             {t}
           </button>
@@ -256,6 +257,7 @@ export function ProjectDetailPage() {
       {tab === 'secrets' && <SecretsTab projectId={id} />}
       {tab === 'env' && <EnvsTab projectId={id} envs={project.envs ?? []} onChange={reload} />}
       {tab === 'gallery' && <GalleryTab projectId={id} items={project.gallery ?? []} onChange={reload} />}
+      {tab === 'presence' && <ProjectPresenceTab project={project} />}
     </div>
   )
 }

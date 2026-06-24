@@ -637,3 +637,7 @@ code {
     grid-template-columns: 1fr;
   }
 }
+
+.char-counter.over-limit {
+  color: var(--danger);
+}
