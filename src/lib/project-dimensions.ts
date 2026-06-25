@@ -33,6 +33,12 @@ export const PROJECT_MATURITY = [
   { value: 'sunset', label: 'Sunset' },
 ] as const
 
+export const PROJECT_ACCESS_LEVELS = [
+  { value: 'private', label: 'Private (admin only)' },
+  { value: 'public', label: 'Public (landing page)' },
+  { value: 'secret', label: 'Secret (business — password to downgrade)' },
+] as const
+
 export const PROJECT_VISIBILITY_GOALS = [
   { value: 'revenue', label: 'Revenue' },
   { value: 'job_hunting', label: 'Job hunting' },

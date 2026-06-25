@@ -103,6 +103,7 @@ export const api = {
       if (filters?.monetization) params.set('monetization', filters.monetization)
       if (filters?.maturity) params.set('maturity', filters.maturity)
       if (filters?.visibilityGoal) params.set('visibilityGoal', filters.visibilityGoal)
+      if (filters?.accessLevel) params.set('accessLevel', filters.accessLevel)
       if (filters?.distribution) params.set('distribution', filters.distribution)
       if (filters?.isPublic !== undefined) params.set('isPublic', String(filters.isPublic))
       if (filters?.featured !== undefined) params.set('featured', String(filters.featured))
@@ -116,7 +117,7 @@ export const api = {
         method: 'POST',
         body: JSON.stringify(body),
       }),
-    update: (id: string, body: Partial<Project>) =>
+    update: (id: string, body: Partial<Project> & { secretUnlockPassword?: string }) =>
       request<Project>(`/v1/admin/projects/${id}`, {
         method: 'PATCH',
         body: JSON.stringify(body),

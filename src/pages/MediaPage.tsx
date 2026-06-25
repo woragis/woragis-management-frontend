@@ -41,13 +41,13 @@ export function MediaPage() {
       <header className="page-header">
         <div>
           <h1>Media</h1>
-          <p className="muted">Upload images stored in your Railway bucket (via API).</p>
+          <p className="muted">Upload images, GIFs, and videos stored in your Railway bucket (via API).</p>
         </div>
         <div>
           <input
             ref={inputRef}
             type="file"
-            accept="image/*,application/pdf"
+            accept="image/*,video/mp4,video/webm,video/quicktime,application/pdf"
             hidden
             onChange={(e) => {
               const file = e.target.files?.[0]
@@ -71,6 +71,8 @@ export function MediaPage() {
           <article key={m.id} className="card media-card">
             {m.mimeType.startsWith('image/') ? (
               <img src={m.publicUrl} alt={m.altText || m.filename} />
+            ) : m.mimeType.startsWith('video/') ? (
+              <video src={m.publicUrl} controls muted playsInline />
             ) : (
               <div className="media-placeholder">{m.mimeType}</div>
             )}

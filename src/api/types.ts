@@ -17,6 +17,7 @@ export type Project = {
   githubUrl: string
   repoVisibility: 'public' | 'private'
   notes: string
+  accessLevel: ProjectAccessLevel
   isPublic: boolean
   featured: boolean
   displayOrder: number
@@ -72,6 +73,7 @@ export type ProjectGalleryItem = {
   id: string
   projectId: string
   mediaAssetId: string
+  mediaAsset?: MediaAsset
   displayOrder: number
   caption: string
   createdAt: string
@@ -137,6 +139,7 @@ export type ProjectFilters = {
   monetization?: string
   maturity?: string
   visibilityGoal?: string
+  accessLevel?: string
   distribution?: string
   isPublic?: boolean
   featured?: boolean
@@ -158,6 +161,8 @@ export type ProjectMonetization = 'subscription' | 'one_time' | 'ads' | 'service
 export type ProjectMaturity = 'idea' | 'building' | 'mvp' | 'launched' | 'maintenance' | 'sunset'
 
 export type ProjectVisibilityGoal = 'revenue' | 'job_hunting' | 'academic_credit' | 'community' | 'private'
+
+export type ProjectAccessLevel = 'private' | 'public' | 'secret'
 
 export type SocialPlatform = 'linkedin' | 'reddit' | 'twitter'
 

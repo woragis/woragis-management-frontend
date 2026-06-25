@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import type { Project, ProjectFilters } from '../api/types'
 import {
+  PROJECT_ACCESS_LEVELS,
   PROJECT_INTENTS,
   PROJECT_MATURITY,
   labelFor,
@@ -78,18 +79,15 @@ export function ProjectsPage() {
           ))}
         </select>
         <select
-          value={filters.isPublic === undefined ? '' : String(filters.isPublic)}
-          onChange={(e) => {
-            const v = e.target.value
-            setFilters((f) => ({
-              ...f,
-              isPublic: v === '' ? undefined : v === 'true',
-            }))
-          }}
+          value={filters.accessLevel ?? ''}
+          onChange={(e) =>
+            setFilters((f) => ({ ...f, accessLevel: e.target.value || undefined }))
+          }
         >
-          <option value="">Public: any</option>
-          <option value="true">Public only</option>
-          <option value="false">Private only</option>
+          <option value="">All access levels</option>
+          {PROJECT_ACCESS_LEVELS.map((o) => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
         </select>
         <select
           value={filters.featured === undefined ? '' : String(filters.featured)}
@@ -119,7 +117,7 @@ export function ProjectsPage() {
                 <th>Intent</th>
                 <th>Maturity</th>
                 <th>Status</th>
-                <th>Public</th>
+                <th>Access</th>
                 <th>Stack</th>
                 <th />
               </tr>
@@ -143,7 +141,11 @@ export function ProjectsPage() {
                   <td>
                     <span className={`badge ${p.status}`}>{p.status}</span>
                   </td>
-                  <td>{p.isPublic ? 'Yes' : 'No'}</td>
+                  <td>
+                    <span className={`badge ${p.accessLevel === 'secret' ? 'danger' : p.accessLevel}`}>
+                      {p.accessLevel || (p.isPublic ? 'public' : 'private')}
+                    </span>
+                  </td>
                   <td className="stack-cell">
                     {(p.stack ?? []).slice(0, 3).join(', ')}
                   </td>

@@ -1,10 +1,12 @@
 import { type FormEvent, useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ImagePicker } from '../components/ImagePicker'
+import { MediaPicker } from '../components/MediaPicker'
 import { MarkdownField } from '../components/MarkdownPreview'
 import { api } from '../api/client'
-import type { Project, ProjectDomain, ProjectEnv, ProjectLink, ProjectSecret, ProjectDistribution } from '../api/types'
+import type { Project, ProjectDomain, ProjectEnv, ProjectLink, ProjectSecret, ProjectDistribution, ProjectAccessLevel } from '../api/types'
 import {
+  PROJECT_ACCESS_LEVELS,
   PROJECT_DISTRIBUTIONS,
   PROJECT_INTENTS,
   PROJECT_MATURITY,
@@ -29,6 +31,7 @@ export function ProjectDetailPage() {
   const [coverImageId, setCoverImageId] = useState<string | null>(null)
   const [longDescription, setLongDescription] = useState('')
   const [distribution, setDistribution] = useState<ProjectDistribution[]>([])
+  const [accessLevel, setAccessLevel] = useState<ProjectAccessLevel>('private')
 
   const reload = useCallback(async () => {
     const p = await api.projects.get(id)
@@ -36,6 +39,7 @@ export function ProjectDetailPage() {
     setCoverImageId(p.coverImageId)
     setLongDescription(p.longDescription)
     setDistribution(p.distribution ?? [])
+    setAccessLevel(p.accessLevel ?? (p.isPublic ? 'public' : 'private'))
   }, [id])
 
   useEffect(() => {
@@ -49,35 +53,48 @@ export function ProjectDetailPage() {
     if (!project) return
     setSaving(true)
     const fd = new FormData(e.currentTarget)
+    const nextAccess = String(fd.get('accessLevel')) as ProjectAccessLevel
+    const payload: Parameters<typeof api.projects.update>[1] = {
+      name: String(fd.get('name')),
+      slug: String(fd.get('slug')),
+      status: String(fd.get('status')) as Project['status'],
+      shortDescription: String(fd.get('shortDescription')),
+      longDescription,
+      description: String(fd.get('description')),
+      notes: String(fd.get('notes')),
+      repoUrl: String(fd.get('repoUrl')),
+      demoUrl: String(fd.get('demoUrl')),
+      githubUrl: String(fd.get('githubUrl')),
+      repoVisibility: String(fd.get('repoVisibility')) as Project['repoVisibility'],
+      publicSlug: String(fd.get('publicSlug')),
+      displayOrder: Number(fd.get('displayOrder') || 0),
+      stack: String(fd.get('stack'))
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean),
+      intent: String(fd.get('intent')) as Project['intent'],
+      monetization: String(fd.get('monetization')) as Project['monetization'],
+      maturity: String(fd.get('maturity')) as Project['maturity'],
+      visibilityGoal: String(fd.get('visibilityGoal')) as Project['visibilityGoal'],
+      distribution,
+      accessLevel: nextAccess,
+      featured: nextAccess === 'secret' ? false : fd.get('featured') === 'on',
+      coverImageId,
+    }
     try {
-      const updated = await api.projects.update(id, {
-        name: String(fd.get('name')),
-        slug: String(fd.get('slug')),
-        status: String(fd.get('status')) as Project['status'],
-        shortDescription: String(fd.get('shortDescription')),
-        longDescription,
-        description: String(fd.get('description')),
-        notes: String(fd.get('notes')),
-        repoUrl: String(fd.get('repoUrl')),
-        demoUrl: String(fd.get('demoUrl')),
-        githubUrl: String(fd.get('githubUrl')),
-        repoVisibility: String(fd.get('repoVisibility')) as Project['repoVisibility'],
-        publicSlug: String(fd.get('publicSlug')),
-        displayOrder: Number(fd.get('displayOrder') || 0),
-        stack: String(fd.get('stack'))
-          .split(',')
-          .map((s) => s.trim())
-          .filter(Boolean),
-        intent: String(fd.get('intent')) as Project['intent'],
-        monetization: String(fd.get('monetization')) as Project['monetization'],
-        maturity: String(fd.get('maturity')) as Project['maturity'],
-        visibilityGoal: String(fd.get('visibilityGoal')) as Project['visibilityGoal'],
-        distribution,
-        isPublic: fd.get('isPublic') === 'on',
-        featured: fd.get('featured') === 'on',
-        coverImageId,
-      })
+      if (project.accessLevel === 'secret' && nextAccess !== 'secret') {
+        const pwd = window.prompt(
+          'Este projeto é SECRETO. Digite a senha de desbloqueio para alterar a visibilidade:',
+        )
+        if (!pwd) {
+          toast('Senha obrigatória para sair do modo secreto.', 'error')
+          return
+        }
+        payload.secretUnlockPassword = pwd
+      }
+      const updated = await api.projects.update(id, payload)
       setProject(updated)
+      setAccessLevel(updated.accessLevel)
       toast('Project saved.', 'success')
     } catch (err) {
       toast(err instanceof Error ? err.message : 'Save failed', 'error')
@@ -106,7 +123,14 @@ export function ProjectDetailPage() {
         <div>
           <Link to="/projects" className="back-link">← Projects</Link>
           <h1>{project.name}</h1>
-          <p className="muted">{project.slug}</p>
+          <p className="muted">
+            {project.slug}
+            {project.accessLevel === 'secret' ? (
+              <span className="badge danger" style={{ marginLeft: '0.5rem' }}>
+                SECRET
+              </span>
+            ) : null}
+          </p>
         </div>
         <button type="button" className="btn danger" onClick={deleteProject}>
           Delete
@@ -236,12 +260,33 @@ export function ProjectDetailPage() {
               <option value="public">Public (show on landing)</option>
             </select>
           </label>
-          <label className="checkbox">
-            <input name="isPublic" type="checkbox" defaultChecked={project.isPublic} />
-            Public on landing
+          <label>
+            Access level
+            <select
+              name="accessLevel"
+              value={accessLevel}
+              onChange={(e) => setAccessLevel(e.target.value as ProjectAccessLevel)}
+            >
+              {PROJECT_ACCESS_LEVELS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
           </label>
-          <label className="checkbox">
-            <input name="featured" type="checkbox" defaultChecked={project.featured} />
+          {accessLevel === 'secret' ? (
+            <p className="muted small full">
+              Projetos secretos nunca aparecem na landing. Para mudar para privado ou público, será
+              pedida a senha de desbloqueio.
+            </p>
+          ) : null}
+          <label className="checkbox" style={{ opacity: accessLevel === 'secret' ? 0.5 : 1 }}>
+            <input
+              name="featured"
+              type="checkbox"
+              defaultChecked={project.featured}
+              disabled={accessLevel === 'secret'}
+            />
             Featured
           </label>
           <div className="form-actions full">
@@ -580,7 +625,7 @@ function GalleryTab({
   onChange,
 }: {
   projectId: string
-  items: { id: string; mediaAssetId: string; caption: string }[]
+  items: import('../api/types').ProjectGalleryItem[]
   onChange: () => Promise<void>
 }) {
   const { toast } = useToast()
@@ -606,7 +651,12 @@ function GalleryTab({
     <div className="stack-section">
       <form className="card form-grid inline-add" onSubmit={add}>
         <div className="span-2">
-          <ImagePicker label="Image" value={mediaAssetId} onChange={setMediaAssetId} />
+          <MediaPicker
+            label="Image, GIF, or video"
+            value={mediaAssetId}
+            onChange={setMediaAssetId}
+            filter="gallery"
+          />
         </div>
         <label>
           Caption
@@ -619,9 +669,20 @@ function GalleryTab({
       <ul className="item-list card">
         {items.map((item) => (
           <li key={item.id}>
-            <div>
-              <code>{item.mediaAssetId}</code>
-              {item.caption && <span className="muted"> — {item.caption}</span>}
+            <div className="gallery-item-preview">
+              {item.mediaAsset?.mimeType.startsWith('image/') ? (
+                <img src={item.mediaAsset.publicUrl} alt={item.caption || item.mediaAsset.filename} className="image-picker-thumb" />
+              ) : item.mediaAsset?.mimeType.startsWith('video/') ? (
+                <video src={item.mediaAsset.publicUrl} className="image-picker-thumb" muted playsInline controls />
+              ) : (
+                <code className="small">{item.mediaAssetId}</code>
+              )}
+              <div>
+                {item.caption && <strong>{item.caption}</strong>}
+                {item.mediaAsset ? (
+                  <div className="muted small">{item.mediaAsset.filename} · {item.mediaAsset.mimeType}</div>
+                ) : null}
+              </div>
             </div>
             <button
               type="button"

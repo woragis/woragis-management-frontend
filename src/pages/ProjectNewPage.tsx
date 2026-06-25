@@ -1,8 +1,8 @@
 import { type FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
-import type { ProjectIntent } from '../api/types'
-import { PROJECT_INTENTS } from '../lib/project-dimensions'
+import type { ProjectAccessLevel, ProjectIntent } from '../api/types'
+import { PROJECT_ACCESS_LEVELS, PROJECT_INTENTS } from '../lib/project-dimensions'
 
 export function ProjectNewPage() {
   const navigate = useNavigate()
@@ -13,7 +13,7 @@ export function ProjectNewPage() {
   const [shortDescription, setShortDescription] = useState('')
   const [stack, setStack] = useState('')
   const [intent, setIntent] = useState('portfolio')
-  const [isPublic, setIsPublic] = useState(false)
+  const [accessLevel, setAccessLevel] = useState<ProjectAccessLevel>('private')
   const [featured, setFeatured] = useState(false)
 
   async function handleSubmit(e: FormEvent) {
@@ -30,8 +30,8 @@ export function ProjectNewPage() {
           .map((s) => s.trim())
           .filter(Boolean),
         intent: intent as ProjectIntent,
-        isPublic,
-        featured,
+        accessLevel,
+        featured: accessLevel === 'secret' ? false : featured,
       })
       navigate(`/projects/${project.id}`)
     } catch (err) {
@@ -76,12 +76,21 @@ export function ProjectNewPage() {
             ))}
           </select>
         </label>
-        <label className="checkbox">
-          <input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} />
-          Public on landing
+        <label>
+          Access level
+          <select value={accessLevel} onChange={(e) => setAccessLevel(e.target.value as ProjectAccessLevel)}>
+            {PROJECT_ACCESS_LEVELS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
         </label>
-        <label className="checkbox">
-          <input type="checkbox" checked={featured} onChange={(e) => setFeatured(e.target.checked)} />
+        <label className="checkbox" style={{ opacity: accessLevel === 'secret' ? 0.5 : 1 }}>
+          <input
+            type="checkbox"
+            checked={featured}
+            disabled={accessLevel === 'secret'}
+            onChange={(e) => setFeatured(e.target.checked)}
+          />
           Featured
         </label>
         {error && <p className="error full">{error}</p>}
